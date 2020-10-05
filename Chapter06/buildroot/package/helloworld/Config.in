@@ -1,0 +1,4 @@
+config BR2_PACKAGE_HELLOWORLD
+	bool "helloworld"
+	help
+	  A friendly program that prints Hello World! every 10s

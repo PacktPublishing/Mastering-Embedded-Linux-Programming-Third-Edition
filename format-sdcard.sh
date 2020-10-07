@@ -1,6 +1,6 @@
 #!/bin/bash
 # Format a microSD card for the BeagelBone Black
-# Mastering Mebedded Linux Programming
+# Mastering Embedded Linux Programming
 # Copyright (c) Chris Simmonds, 2017
 
 if [ $# -ne 1 ]; then

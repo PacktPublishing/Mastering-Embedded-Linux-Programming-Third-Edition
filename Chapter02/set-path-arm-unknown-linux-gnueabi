@@ -1,0 +1,11 @@
+# Add a toolchain created using CrosstoolNG to your path
+# and export ARCH and CROSS_COMPILE variables ready to 
+# compile U-Boot, Linux, Busybox and anything else using
+# the Kconfig/Kbuild scripts
+
+# Chris Simmonds, chris@2net.co.uk
+
+PATH=${HOME}/x-tools/arm-unknown-linux-gnueabi/bin/:$PATH
+export CROSS_COMPILE=arm-unknown-linux-gnueabi-
+export ARCH=arm
+

@@ -1,0 +1,79 @@
+This is a demonstration of writing and linking shared and static libraries.
+The library file, testlib.c, contains two functions: 
+    int add_ints(int n1, int n2);
+    int multiply_ints(int n1, int n2);
+
+There is a header file with these definitions in inc/testlib.h
+
+The directories shared/ and static/ contain identical copies of the
+library code but the first creates a shared library, testlib.so and
+the second creates a static library, testlib.a
+
+There is a program in hello-arm which links to each.
+Here is the directory layout:
+
+$ tree
+.
+├── hello-arm
+│   ├── hello-arm.c
+│   └── Makefile
+├── inc
+│   └── testlib.h
+├── shared
+│   ├── Makefile
+│   └── testlib.c
+└── static
+    ├── Makefile
+    └── testlib.c
+
+Building
+========
+Compile the libraries first:
+
+$ cd shared
+$ make
+
+$ cd static
+$ make
+
+Then compile the application
+$ cd hello-arm
+$ make
+
+You should have two executables: hello-arm-shared and hello-arm-static
+$ list-libs hello-arm-shared 
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+ 0x0000000000000001 (NEEDED)             Shared library: [libtest.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+
+$ list-libs hello-arm-static 
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+
+
+Running
+=======
+
+Executing the two executables gives different results:
+
+$ ./hello-arm-static 
+Hello from ARM
+add_ints
+4 + 5 = 9
+multiply_ints
+4 * 5 = 20
+
+$ ./hello-arm-shared 
+./hello-arm-shared: error while loading shared libraries: libtest.so: cannot open shared object file: No such file or directory
+
+
+If you add the directory containing libtest.so to the library loader path,
+then it works:
+
+$ LD_LIBRARY_PATH=../shared ./hello-arm-shared 
+Hello from ARM
+add_ints
+4 + 5 = 9
+multiply_ints
+4 * 5 = 20
+

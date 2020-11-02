@@ -1,14 +1,13 @@
-/* Copyright (C) 2017, Chris Simmonds (chris@2net.co.uk) */
+/* Copyright (C) 2020, Frank Vasquez (frank.vasquez@gmail.com) */
 
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <poll.h>
+#include <unistd.h>
+#include <sys/epoll.h>
+#include <sys/types.h>
 
 /*
- * Demonstration of using poll(2) to wait for an interrupt on GPIO.
+ * Demonstration of using epoll(2) to wait for an interrupt on GPIO.
  *
  * To try this out on a BeagleBone Black, connect a push button switch
  * between P9 15 (gpio1_16) and P9 1 (ground).
@@ -29,13 +28,20 @@
 
 int main(int argc, char *argv[])
 {
+	int ep;
 	int f;
-	struct pollfd poll_fds[1];
-	int ret;
+	struct epoll_event ev, events;
 	char value[4];
+	int ret;
 	int n;
 
-	f = open("/sys/class/gpio/gpio48/value", O_RDONLY);
+	ep = epoll_create(1);
+	if (ep == -1) {
+		perror("Can't create epoll");
+		return 1;
+	}
+
+	f = open("/sys/class/gpio/gpio48/value", O_RDONLY | O_NONBLOCK);
 	if (f == -1) {
 		perror("Can't open gpio48");
 		return 1;
@@ -48,11 +54,18 @@ int main(int argc, char *argv[])
 		lseek(f, 0, SEEK_SET);
 	}
 
-	poll_fds[0].fd = f;
-	poll_fds[0].events = POLLPRI | POLLERR;
+	ev.events = EPOLLPRI;
+	ev.data.fd = f;
+	ret = epoll_ctl(ep, EPOLL_CTL_ADD, f, &ev);
+	if (ret == -1) {
+		perror("Can't register target file descriptor with epoll");
+		return 1;
+	}
+
 	while (1) {
 		printf("Waiting\n");
-		ret = poll(poll_fds, 1, -1);
+		ret = epoll_wait(ep, &events, 1, -1);
+
 		if (ret > 0) {
 			n = read(f, &value, sizeof(value));
 			printf("Button pressed: read %d bytes, value=%c\n",

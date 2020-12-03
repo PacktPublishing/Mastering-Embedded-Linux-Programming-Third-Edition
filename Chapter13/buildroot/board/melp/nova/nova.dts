@@ -46,6 +46,19 @@
 };
 
 &spi0 {
-        pinctrl-names = "default";
-        pinctrl-0 = <&spi0_pins_default>;
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi0_pins_default>;
+
+	channel@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		compatible = "spidev";
+		symlink = "spi/0.0";
+
+		reg = <0>;
+		spi-max-frequency = <16000000>;
+		spi-cpha;
+        };
 };

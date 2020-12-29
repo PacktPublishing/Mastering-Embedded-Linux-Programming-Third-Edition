@@ -1,0 +1,7 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "cmake.configureArgs": [
+        "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/cross.cmake"
+    ],
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+}

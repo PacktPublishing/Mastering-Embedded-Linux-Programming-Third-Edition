@@ -1,0 +1,13 @@
+--- ./src/python/CMakeLists.txt	2020-08-06 22:04:15.400347699 +0100
++++ ./src/python/CMakeLists.txt	2020-08-06 22:04:28.012820888 +0100
+@@ -5,10 +5,6 @@
+   set(PYTHON_CMD "python")
+ endif()
+ 
+-if(EXISTS "/etc/debian_version")
+-  set(PYTHON_FLAGS "${PYTHON_FLAGS} --install-layout deb")
+-endif()
+-
+ file(GLOB_RECURSE PYTHON_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+   ${CMAKE_CURRENT_SOURCE_DIR}/*.py)
+ file(GLOB_RECURSE PYTHON_INCLUDES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}

@@ -1,5 +1,5 @@
 HELLOWORLD_VERSION = 1.0.0
-HELLOWORLD_SITE = /home/chris/MELP/helloworld
+HELLOWORLD_SITE = /home/chris/MELP/Chapter06/helloworld
 HELLOWORLD_SITE_METHOD = local
 
 define HELLOWORLD_BUILD_CMDS

@@ -1,22 +1,22 @@
-From e160f8293446922183f02c7008ea34a4341f3960 Mon Sep 17 00:00:00 2001
-From: Chris Simmonds <chris@2net.co.uk>
-Date: Thu, 20 Apr 2017 16:56:17 +0100
+From 093ec472f68e2e37b67028f97b9d4084af6ef2e0 Mon Sep 17 00:00:00 2001
+From: Frank Vasquez <frank.vasquez@gmail.com>
+Date: Mon, 8 Feb 2021 21:44:50 -0800
 Subject: [PATCH] BSP for Nova
 
 ---
  arch/arm/Kconfig                   |   1 +
- arch/arm/mach-omap2/am33xx/Kconfig |   9 +
- board/ti/nova/Kconfig              |  43 ++
- board/ti/nova/MAINTAINERS          |  12 +
- board/ti/nova/Makefile             |  13 +
- board/ti/nova/README               | 205 +++++++++
- board/ti/nova/board.c              | 879 +++++++++++++++++++++++++++++++++++++
- board/ti/nova/board.h              |  82 ++++
- board/ti/nova/mux.c                | 403 +++++++++++++++++
- board/ti/nova/u-boot.lds           | 158 +++++++
- configs/nova_defconfig             |  46 ++
- include/configs/nova.h             | 421 ++++++++++++++++++
- 12 files changed, 2272 insertions(+)
+ arch/arm/mach-omap2/am33xx/Kconfig |  30 +
+ board/ti/nova/Kconfig              |  24 +
+ board/ti/nova/MAINTAINERS          |   8 +
+ board/ti/nova/Makefile             |  11 +
+ board/ti/nova/README               | 205 ++++++
+ board/ti/nova/board.c              | 993 +++++++++++++++++++++++++++++
+ board/ti/nova/board.h              |  97 +++
+ board/ti/nova/mux.c                | 427 +++++++++++++
+ board/ti/nova/u-boot.lds           | 164 +++++
+ configs/nova_defconfig             |  97 +++
+ include/configs/nova.h             | 322 ++++++++++
+ 12 files changed, 2379 insertions(+)
  create mode 100644 board/ti/nova/Kconfig
  create mode 100644 board/ti/nova/MAINTAINERS
  create mode 100644 board/ti/nova/Makefile
@@ -29,53 +29,65 @@ Subject: [PATCH] BSP for Nova
  create mode 100644 include/configs/nova.h
 
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 0ed36cd..220e065 100644
+index fbe90875ae..3e0c5691ae 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
-@@ -1066,6 +1066,7 @@ source "board/vscom/baltos/Kconfig"
- source "board/woodburn/Kconfig"
- source "board/work-microwave/work_92105/Kconfig"
- source "board/zipitz2/Kconfig"
+@@ -2029,6 +2029,7 @@ source "board/spear/spear600/Kconfig"
+ source "board/spear/x600/Kconfig"
+ source "board/st/stv0991/Kconfig"
+ source "board/tcl/sl50/Kconfig"
 +source "board/ti/nova/Kconfig"
- 
- source "arch/arm/Kconfig.debug"
- 
+ source "board/toradex/colibri_pxa270/Kconfig"
+ source "board/variscite/dart_6ul/Kconfig"
+ source "board/vscom/baltos/Kconfig"
 diff --git a/arch/arm/mach-omap2/am33xx/Kconfig b/arch/arm/mach-omap2/am33xx/Kconfig
-index 56c4406..f93249e 100644
+index 9a98e8a0a9..aa605eab04 100644
 --- a/arch/arm/mach-omap2/am33xx/Kconfig
 +++ b/arch/arm/mach-omap2/am33xx/Kconfig
-@@ -18,6 +18,15 @@ config TARGET_AM335X_EVM
+@@ -62,6 +62,36 @@ config TARGET_AM335X_EVM
  	  to write software and develop hardware around
  	  an AM335x processor subsystem.
  
 +config TARGET_NOVA
 +	bool "Support the Nova! board"
++	select BOARD_LATE_INIT
 +	select DM
-+	select DM_SERIAL
 +	select DM_GPIO
++	select DM_SERIAL
 +	select TI_I2C_BOARD_DETECT
++        imply CMD_DM
++        imply SPL_DM
++        imply SPL_DM_SEQ_ALIAS
++        imply SPL_ENV_SUPPORT
++        imply SPL_FS_EXT4
++        imply SPL_FS_FAT
++        imply SPL_GPIO_SUPPORT
++        imply SPL_I2C_SUPPORT
++        imply SPL_LIBCOMMON_SUPPORT
++        imply SPL_LIBDISK_SUPPORT
++        imply SPL_LIBGENERIC_SUPPORT
++        imply SPL_MMC_SUPPORT
++        imply SPL_NAND_SUPPORT
++        imply SPL_OF_LIBFDT
++        imply SPL_POWER_SUPPORT
++        imply SPL_SEPARATE_BSS
++        imply SPL_SERIAL_SUPPORT
++        imply SPL_SYS_MALLOC_SIMPLE
++        imply SPL_WATCHDOG_SUPPORT
++        imply SPL_YMODEM_SUPPORT
 +	help
 +	  The Nova target board
 +
  config TARGET_AM335X_BALTOS
  	bool "Support am335x_baltos"
- 	select DM
+ 	select BOARD_LATE_INIT
 diff --git a/board/ti/nova/Kconfig b/board/ti/nova/Kconfig
 new file mode 100644
-index 0000000..c8a5c4f
+index 0000000000..4568f186ca
 --- /dev/null
 +++ b/board/ti/nova/Kconfig
-@@ -0,0 +1,43 @@
+@@ -0,0 +1,24 @@
 +if TARGET_NOVA
-+
-+config SPL_ENV_SUPPORT
-+	default y
-+
-+config SPL_WATCHDOG_SUPPORT
-+	default y
-+
-+config SPL_YMODEM_SUPPORT
-+	default y
 +
 +config SYS_BOARD
 +	default "nova"
@@ -89,16 +101,6 @@ index 0000000..c8a5c4f
 +config SYS_CONFIG_NAME
 +	default "nova"
 +
-+config CONS_INDEX
-+	int "UART used for console"
-+	range 1 6
-+	default 1
-+	help
-+	  The AM335x SoC has a total of 6 UARTs (UART0 to UART5 as referenced
-+	  in documentation, etc) available to it.  Depending on your specific
-+	  board you may want something other than UART0 as for example the IDK
-+	  uses UART3 so enter 4 here.
-+
 +config NOR
 +	bool "Support for NOR flash"
 +	help
@@ -111,35 +113,29 @@ index 0000000..c8a5c4f
 +endif
 diff --git a/board/ti/nova/MAINTAINERS b/board/ti/nova/MAINTAINERS
 new file mode 100644
-index 0000000..c99e06d
+index 0000000000..219c8715bf
 --- /dev/null
 +++ b/board/ti/nova/MAINTAINERS
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,8 @@
 +AM335X BOARD
 +M:	Tom Rini <trini@konsulko.com>
 +S:	Maintained
 +F:	board/ti/am335x/
 +F:	include/configs/am335x_evm.h
-+F:	configs/am335x_boneblack_defconfig
 +F:	configs/am335x_boneblack_vboot_defconfig
 +F:	configs/am335x_evm_defconfig
-+F:	configs/am335x_evm_nor_defconfig
-+F:	configs/am335x_evm_norboot_defconfig
 +F:	configs/am335x_evm_spiboot_defconfig
-+F:	configs/am335x_evm_usbspl_defconfig
 diff --git a/board/ti/nova/Makefile b/board/ti/nova/Makefile
 new file mode 100644
-index 0000000..804ac37
+index 0000000000..c34b9b1dd8
 --- /dev/null
 +++ b/board/ti/nova/Makefile
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,11 @@
++# SPDX-License-Identifier: GPL-2.0+
 +#
 +# Makefile
 +#
 +# Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
-+#
-+# SPDX-License-Identifier:	GPL-2.0+
-+#
 +
 +ifeq ($(CONFIG_SKIP_LOWLEVEL_INIT),)
 +obj-y	:= mux.o
@@ -148,7 +144,7 @@ index 0000000..804ac37
 +obj-y	+= board.o
 diff --git a/board/ti/nova/README b/board/ti/nova/README
 new file mode 100644
-index 0000000..19e0ecc
+index 0000000000..19e0eccbac
 --- /dev/null
 +++ b/board/ti/nova/README
 @@ -0,0 +1,205 @@
@@ -359,22 +355,27 @@ index 0000000..19e0ecc
 +U-Boot # nand write ${fdtaddr} u-boot-spl-os
 diff --git a/board/ti/nova/board.c b/board/ti/nova/board.c
 new file mode 100644
-index 0000000..8eaf3e9
+index 0000000000..984cc5e3ba
 --- /dev/null
 +++ b/board/ti/nova/board.c
-@@ -0,0 +1,879 @@
+@@ -0,0 +1,993 @@
++// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * board.c
 + *
 + * Board functions for TI AM335X based boards
 + *
 + * Copyright (C) 2011, Texas Instruments, Incorporated - http://www.ti.com/
-+ *
-+ * SPDX-License-Identifier:	GPL-2.0+
 + */
 +
 +#include <common.h>
++#include <dm.h>
++#include <env.h>
 +#include <errno.h>
++#include <image.h>
++#include <init.h>
++#include <malloc.h>
++#include <net.h>
 +#include <spl.h>
 +#include <serial.h>
 +#include <asm/arch/cpu.h>
@@ -390,15 +391,18 @@ index 0000000..8eaf3e9
 +#include <asm/io.h>
 +#include <asm/emif.h>
 +#include <asm/gpio.h>
++#include <asm/omap_common.h>
 +#include <asm/omap_sec_common.h>
++#include <asm/omap_mmc.h>
 +#include <i2c.h>
 +#include <miiphy.h>
 +#include <cpsw.h>
++#include <linux/bitops.h>
++#include <linux/delay.h>
 +#include <power/tps65217.h>
 +#include <power/tps65910.h>
-+#include <environment.h>
++#include <env_internal.h>
 +#include <watchdog.h>
-+#include <environment.h>
 +#include "../common/board_detect.h"
 +#include "board.h"
 +
@@ -433,9 +437,11 @@ index 0000000..8eaf3e9
 +void do_board_detect(void)
 +{
 +	enable_i2c0_pin_mux();
++#ifndef CONFIG_DM_I2C
 +	i2c_init(CONFIG_SYS_OMAP24_I2C_SPEED, CONFIG_SYS_OMAP24_I2C_SLAVE);
-+
-+	if (ti_i2c_eeprom_am_get(-1, CONFIG_SYS_I2C_EEPROM_ADDR))
++#endif
++	if (ti_i2c_eeprom_am_get(CONFIG_EEPROM_BUS_ADDRESS,
++				 CONFIG_EEPROM_CHIP_ADDRESS))
 +		printf("ti_i2c_eeprom_init failed\n");
 +}
 +#endif
@@ -604,14 +610,16 @@ index 0000000..8eaf3e9
 +#ifdef CONFIG_SPL_OS_BOOT
 +int spl_start_uboot(void)
 +{
++#ifdef CONFIG_SPL_SERIAL_SUPPORT
 +	/* break into full u-boot on 'c' */
 +	if (serial_tstc() && serial_getc() == 'c')
 +		return 1;
++#endif
 +
 +#ifdef CONFIG_SPL_ENV_SUPPORT
 +	env_init();
-+	env_relocate_spec();
-+	if (getenv_yesno("boot_os") != 1)
++	env_load();
++	if (env_get_yesno("boot_os") != 1)
 +		return 1;
 +#endif
 +
@@ -619,163 +627,227 @@ index 0000000..8eaf3e9
 +}
 +#endif
 +
-+#define OSC	(V_OSCK/1000000)
-+const struct dpll_params dpll_ddr = {
-+		266, OSC-1, 1, -1, -1, -1, -1};
-+const struct dpll_params dpll_ddr_evm_sk = {
-+		303, OSC-1, 1, -1, -1, -1, -1};
-+const struct dpll_params dpll_ddr_bone_black = {
-+		400, OSC-1, 1, -1, -1, -1, -1};
-+
-+void am33xx_spl_board_init(void)
++const struct dpll_params *get_dpll_ddr_params(void)
 +{
-+	int mpu_vdd;
++	int ind = get_sys_clk_index();
 +
-+	/* Get the frequency */
-+	dpll_mpu_opp100.m = am335x_get_efuse_mpu_max_freq(cdev);
++	if (board_is_evm_sk())
++		return &dpll_ddr3_303MHz[ind];
++	else if (board_is_pb() || board_is_bone_lt() || board_is_icev2())
++		return &dpll_ddr3_400MHz[ind];
++	else if (board_is_evm_15_or_later())
++		return &dpll_ddr3_303MHz[ind];
++	else
++		return &dpll_ddr2_266MHz[ind];
++}
 +
-+	if (board_is_bone() || board_is_bone_lt()) {
-+		/* BeagleBone PMIC Code */
-+		int usb_cur_lim;
-+
-+		/*
-+		 * Only perform PMIC configurations if board rev > A1
-+		 * on Beaglebone White
-+		 */
-+		if (board_is_bone() && !strncmp(board_ti_get_rev(), "00A1", 4))
-+			return;
-+
-+		if (i2c_probe(TPS65217_CHIP_PM))
-+			return;
-+
-+		/*
-+		 * On Beaglebone White we need to ensure we have AC power
-+		 * before increasing the frequency.
-+		 */
-+		if (board_is_bone()) {
-+			uchar pmic_status_reg;
-+			if (tps65217_reg_read(TPS65217_STATUS,
-+					      &pmic_status_reg))
-+				return;
-+			if (!(pmic_status_reg & TPS65217_PWR_SRC_AC_BITMASK)) {
-+				puts("No AC power, disabling frequency switch\n");
-+				return;
-+			}
++static u8 bone_not_connected_to_ac_power(void)
++{
++	if (board_is_bone()) {
++		uchar pmic_status_reg;
++		if (tps65217_reg_read(TPS65217_STATUS,
++				      &pmic_status_reg))
++			return 1;
++		if (!(pmic_status_reg & TPS65217_PWR_SRC_AC_BITMASK)) {
++			puts("No AC power, switching to default OPP\n");
++			return 1;
 +		}
++	}
++	return 0;
++}
 +
-+		/*
-+		 * Override what we have detected since we know if we have
-+		 * a Beaglebone Black it supports 1GHz.
-+		 */
-+		if (board_is_bone_lt())
-+			dpll_mpu_opp100.m = MPUPLL_M_1000;
++const struct dpll_params *get_dpll_mpu_params(void)
++{
++	int ind = get_sys_clk_index();
++	int freq = am335x_get_efuse_mpu_max_freq(cdev);
 +
-+		/*
-+		 * Increase USB current limit to 1300mA or 1800mA and set
-+		 * the MPU voltage controller as needed.
-+		 */
-+		if (dpll_mpu_opp100.m == MPUPLL_M_1000) {
-+			usb_cur_lim = TPS65217_USB_INPUT_CUR_LIMIT_1800MA;
-+			mpu_vdd = TPS65217_DCDC_VOLT_SEL_1325MV;
-+		} else {
-+			usb_cur_lim = TPS65217_USB_INPUT_CUR_LIMIT_1300MA;
-+			mpu_vdd = TPS65217_DCDC_VOLT_SEL_1275MV;
-+		}
++	if (bone_not_connected_to_ac_power())
++		freq = MPUPLL_M_600;
 +
-+		if (tps65217_reg_write(TPS65217_PROT_LEVEL_NONE,
-+				       TPS65217_POWER_PATH,
-+				       usb_cur_lim,
-+				       TPS65217_USB_INPUT_CUR_LIMIT_MASK))
-+			puts("tps65217_reg_write failure\n");
++	if (board_is_pb() || board_is_bone_lt())
++		freq = MPUPLL_M_1000;
 +
-+		/* Set DCDC3 (CORE) voltage to 1.125V */
-+		if (tps65217_voltage_update(TPS65217_DEFDCDC3,
-+					    TPS65217_DCDC_VOLT_SEL_1125MV)) {
-+			puts("tps65217_voltage_update failure\n");
-+			return;
-+		}
++	switch (freq) {
++	case MPUPLL_M_1000:
++		return &dpll_mpu_opp[ind][5];
++	case MPUPLL_M_800:
++		return &dpll_mpu_opp[ind][4];
++	case MPUPLL_M_720:
++		return &dpll_mpu_opp[ind][3];
++	case MPUPLL_M_600:
++		return &dpll_mpu_opp[ind][2];
++	case MPUPLL_M_500:
++		return &dpll_mpu_opp100;
++	case MPUPLL_M_300:
++		return &dpll_mpu_opp[ind][0];
++	}
 +
-+		/* Set CORE Frequencies to OPP100 */
-+		do_setup_dpll(&dpll_core_regs, &dpll_core_opp100);
++	return &dpll_mpu_opp[ind][0];
++}
 +
-+		/* Set DCDC2 (MPU) voltage */
-+		if (tps65217_voltage_update(TPS65217_DEFDCDC2, mpu_vdd)) {
-+			puts("tps65217_voltage_update failure\n");
-+			return;
-+		}
++static void scale_vcores_bone(int freq)
++{
++	int usb_cur_lim, mpu_vdd;
 +
-+		/*
-+		 * Set LDO3, LDO4 output voltage to 3.3V for Beaglebone.
-+		 * Set LDO3 to 1.8V and LDO4 to 3.3V for Beaglebone Black.
-+		 */
-+		if (board_is_bone()) {
-+			if (tps65217_reg_write(TPS65217_PROT_LEVEL_2,
-+					       TPS65217_DEFLS1,
-+					       TPS65217_LDO_VOLTAGE_OUT_3_3,
-+					       TPS65217_LDO_MASK))
-+				puts("tps65217_reg_write failure\n");
-+		} else {
-+			if (tps65217_reg_write(TPS65217_PROT_LEVEL_2,
-+					       TPS65217_DEFLS1,
-+					       TPS65217_LDO_VOLTAGE_OUT_1_8,
-+					       TPS65217_LDO_MASK))
-+				puts("tps65217_reg_write failure\n");
-+		}
++	/*
++	 * Only perform PMIC configurations if board rev > A1
++	 * on Beaglebone White
++	 */
++	if (board_is_bone() && !strncmp(board_ti_get_rev(), "00A1", 4))
++		return;
 +
++#ifndef CONFIG_DM_I2C
++	if (i2c_probe(TPS65217_CHIP_PM))
++		return;
++#else
++	if (power_tps65217_init(0))
++		return;
++#endif
++
++
++	/*
++	 * On Beaglebone White we need to ensure we have AC power
++	 * before increasing the frequency.
++	 */
++	if (bone_not_connected_to_ac_power())
++		freq = MPUPLL_M_600;
++
++	/*
++	 * Override what we have detected since we know if we have
++	 * a Beaglebone Black it supports 1GHz.
++	 */
++	if (board_is_pb() || board_is_bone_lt())
++		freq = MPUPLL_M_1000;
++
++	switch (freq) {
++	case MPUPLL_M_1000:
++		mpu_vdd = TPS65217_DCDC_VOLT_SEL_1325MV;
++		usb_cur_lim = TPS65217_USB_INPUT_CUR_LIMIT_1800MA;
++		break;
++	case MPUPLL_M_800:
++		mpu_vdd = TPS65217_DCDC_VOLT_SEL_1275MV;
++		usb_cur_lim = TPS65217_USB_INPUT_CUR_LIMIT_1300MA;
++		break;
++	case MPUPLL_M_720:
++		mpu_vdd = TPS65217_DCDC_VOLT_SEL_1200MV;
++		usb_cur_lim = TPS65217_USB_INPUT_CUR_LIMIT_1300MA;
++		break;
++	case MPUPLL_M_600:
++	case MPUPLL_M_500:
++	case MPUPLL_M_300:
++	default:
++		mpu_vdd = TPS65217_DCDC_VOLT_SEL_1100MV;
++		usb_cur_lim = TPS65217_USB_INPUT_CUR_LIMIT_1300MA;
++		break;
++	}
++
++	if (tps65217_reg_write(TPS65217_PROT_LEVEL_NONE,
++			       TPS65217_POWER_PATH,
++			       usb_cur_lim,
++			       TPS65217_USB_INPUT_CUR_LIMIT_MASK))
++		puts("tps65217_reg_write failure\n");
++
++	/* Set DCDC3 (CORE) voltage to 1.10V */
++	if (tps65217_voltage_update(TPS65217_DEFDCDC3,
++				    TPS65217_DCDC_VOLT_SEL_1100MV)) {
++		puts("tps65217_voltage_update failure\n");
++		return;
++	}
++
++	/* Set DCDC2 (MPU) voltage */
++	if (tps65217_voltage_update(TPS65217_DEFDCDC2, mpu_vdd)) {
++		puts("tps65217_voltage_update failure\n");
++		return;
++	}
++
++	/*
++	 * Set LDO3, LDO4 output voltage to 3.3V for Beaglebone.
++	 * Set LDO3 to 1.8V and LDO4 to 3.3V for Beaglebone Black.
++	 */
++	if (board_is_bone()) {
 +		if (tps65217_reg_write(TPS65217_PROT_LEVEL_2,
-+				       TPS65217_DEFLS2,
++				       TPS65217_DEFLS1,
 +				       TPS65217_LDO_VOLTAGE_OUT_3_3,
 +				       TPS65217_LDO_MASK))
 +			puts("tps65217_reg_write failure\n");
 +	} else {
-+		int sil_rev;
-+
-+		/*
-+		 * The GP EVM, IDK and EVM SK use a TPS65910 PMIC.  For all
-+		 * MPU frequencies we support we use a CORE voltage of
-+		 * 1.1375V.  For MPU voltage we need to switch based on
-+		 * the frequency we are running at.
-+		 */
-+		if (i2c_probe(TPS65910_CTRL_I2C_ADDR))
-+			return;
-+
-+		/*
-+		 * Depending on MPU clock and PG we will need a different
-+		 * VDD to drive at that speed.
-+		 */
-+		sil_rev = readl(&cdev->deviceid) >> 28;
-+		mpu_vdd = am335x_get_tps65910_mpu_vdd(sil_rev,
-+						      dpll_mpu_opp100.m);
-+
-+		/* Tell the TPS65910 to use i2c */
-+		tps65910_set_i2c_control();
-+
-+		/* First update MPU voltage. */
-+		if (tps65910_voltage_update(MPU, mpu_vdd))
-+			return;
-+
-+		/* Second, update the CORE voltage. */
-+		if (tps65910_voltage_update(CORE, TPS65910_OP_REG_SEL_1_1_3))
-+			return;
-+
-+		/* Set CORE Frequencies to OPP100 */
-+		do_setup_dpll(&dpll_core_regs, &dpll_core_opp100);
++		if (tps65217_reg_write(TPS65217_PROT_LEVEL_2,
++				       TPS65217_DEFLS1,
++				       TPS65217_LDO_VOLTAGE_OUT_1_8,
++				       TPS65217_LDO_MASK))
++			puts("tps65217_reg_write failure\n");
 +	}
 +
-+	/* Set MPU Frequency to what we detected now that voltages are set */
-+	do_setup_dpll(&dpll_mpu_regs, &dpll_mpu_opp100);
++	if (tps65217_reg_write(TPS65217_PROT_LEVEL_2,
++			       TPS65217_DEFLS2,
++			       TPS65217_LDO_VOLTAGE_OUT_3_3,
++			       TPS65217_LDO_MASK))
++		puts("tps65217_reg_write failure\n");
 +}
 +
-+const struct dpll_params *get_dpll_ddr_params(void)
++void scale_vcores_generic(int freq)
 +{
-+	if (board_is_evm_sk())
-+		return &dpll_ddr_evm_sk;
-+	else if (board_is_bone_lt() || board_is_icev2())
-+		return &dpll_ddr_bone_black;
-+	else if (board_is_evm_15_or_later())
-+		return &dpll_ddr_evm_sk;
++	int sil_rev, mpu_vdd;
++
++	/*
++	 * The GP EVM, IDK and EVM SK use a TPS65910 PMIC.  For all
++	 * MPU frequencies we support we use a CORE voltage of
++	 * 1.10V.  For MPU voltage we need to switch based on
++	 * the frequency we are running at.
++	 */
++#ifndef CONFIG_DM_I2C
++	if (i2c_probe(TPS65910_CTRL_I2C_ADDR))
++		return;
++#else
++	if (power_tps65910_init(0))
++		return;
++#endif
++	/*
++	 * Depending on MPU clock and PG we will need a different
++	 * VDD to drive at that speed.
++	 */
++	sil_rev = readl(&cdev->deviceid) >> 28;
++	mpu_vdd = am335x_get_tps65910_mpu_vdd(sil_rev, freq);
++
++	/* Tell the TPS65910 to use i2c */
++	tps65910_set_i2c_control();
++
++	/* First update MPU voltage. */
++	if (tps65910_voltage_update(MPU, mpu_vdd))
++		return;
++
++	/* Second, update the CORE voltage. */
++	if (tps65910_voltage_update(CORE, TPS65910_OP_REG_SEL_1_1_0))
++		return;
++
++}
++
++void gpi2c_init(void)
++{
++	/* When needed to be invoked prior to BSS initialization */
++	static bool first_time = true;
++
++	if (first_time) {
++		enable_i2c0_pin_mux();
++#ifndef CONFIG_DM_I2C
++		i2c_init(CONFIG_SYS_OMAP24_I2C_SPEED,
++			 CONFIG_SYS_OMAP24_I2C_SLAVE);
++#endif
++		first_time = false;
++	}
++}
++
++void scale_vcores(void)
++{
++	int freq;
++
++	gpi2c_init();
++	freq = am335x_get_efuse_mpu_max_freq(cdev);
++
++	if (board_is_beaglebonex())
++		scale_vcores_bone(freq);
 +	else
-+		return &dpll_ddr;
++		scale_vcores_generic(freq);
 +}
 +
 +void set_uart_mux_conf(void)
@@ -851,7 +923,7 @@ index 0000000..8eaf3e9
 +	if (board_is_evm_sk())
 +		config_ddr(303, &ioregs_evmsk, &ddr3_data,
 +			   &ddr3_cmd_ctrl_data, &ddr3_emif_reg_data, 0);
-+	else if (board_is_bone_lt())
++	else if (board_is_pb() || board_is_bone_lt())
 +		config_ddr(400, &ioregs_bonelt,
 +			   &ddr3_beagleblack_data,
 +			   &ddr3_beagleblack_cmd_ctrl_data,
@@ -872,8 +944,8 @@ index 0000000..8eaf3e9
 +}
 +#endif
 +
-+#if !defined(CONFIG_SPL_BUILD) || \
-+	(defined(CONFIG_SPL_ETH_SUPPORT) && defined(CONFIG_SPL_BUILD))
++#if defined(CONFIG_CLOCK_SYNTHESIZER) && (!defined(CONFIG_SPL_BUILD) || \
++	(defined(CONFIG_SPL_ETH_SUPPORT) && defined(CONFIG_SPL_BUILD)))
 +static void request_and_set_gpio(int gpio, char *name, int val)
 +{
 +	int ret;
@@ -916,6 +988,84 @@ index 0000000..8eaf3e9
 +};
 +#endif
 +
++#if defined(CONFIG_OF_BOARD_SETUP) && defined(CONFIG_OF_CONTROL) && \
++	defined(CONFIG_DM_ETH) && defined(CONFIG_DRIVER_TI_CPSW)
++
++#define MAX_CPSW_SLAVES	2
++
++/* At the moment, we do not want to stop booting for any failures here */
++int ft_board_setup(void *fdt, struct bd_info *bd)
++{
++	const char *slave_path, *enet_name;
++	int enetnode, slavenode, phynode;
++	struct udevice *ethdev;
++	char alias[16];
++	u32 phy_id[2];
++	int phy_addr;
++	int i, ret;
++
++	/* phy address fixup needed only on beagle bone family */
++	if (!board_is_beaglebonex())
++		goto done;
++
++	for (i = 0; i < MAX_CPSW_SLAVES; i++) {
++		sprintf(alias, "ethernet%d", i);
++
++		slave_path = fdt_get_alias(fdt, alias);
++		if (!slave_path)
++			continue;
++
++		slavenode = fdt_path_offset(fdt, slave_path);
++		if (slavenode < 0)
++			continue;
++
++		enetnode = fdt_parent_offset(fdt, slavenode);
++		enet_name = fdt_get_name(fdt, enetnode, NULL);
++
++		ethdev = eth_get_dev_by_name(enet_name);
++		if (!ethdev)
++			continue;
++
++		phy_addr = cpsw_get_slave_phy_addr(ethdev, i);
++
++		/* check for phy_id as well as phy-handle properties */
++		ret = fdtdec_get_int_array_count(fdt, slavenode, "phy_id",
++						 phy_id, 2);
++		if (ret == 2) {
++			if (phy_id[1] != phy_addr) {
++				printf("fixing up phy_id for %s, old: %d, new: %d\n",
++				       alias, phy_id[1], phy_addr);
++
++				phy_id[0] = cpu_to_fdt32(phy_id[0]);
++				phy_id[1] = cpu_to_fdt32(phy_addr);
++				do_fixup_by_path(fdt, slave_path, "phy_id",
++						 phy_id, sizeof(phy_id), 0);
++			}
++		} else {
++			phynode = fdtdec_lookup_phandle(fdt, slavenode,
++							"phy-handle");
++			if (phynode < 0)
++				continue;
++
++			ret = fdtdec_get_int(fdt, phynode, "reg", -ENOENT);
++			if (ret < 0)
++				continue;
++
++			if (ret != phy_addr) {
++				printf("fixing up phy-handle for %s, old: %d, new: %d\n",
++				       alias, ret, phy_addr);
++
++				fdt_setprop_u32(fdt, phynode, "reg",
++						cpu_to_fdt32(phy_addr));
++			}
++		}
++	}
++
++done:
++	return 0;
++}
++#endif
++
 +/*
 + * Basic board specific setup.  Pinmux has been handled already.
 + */
@@ -926,12 +1076,12 @@ index 0000000..8eaf3e9
 +#endif
 +
 +	gd->bd->bi_boot_params = CONFIG_SYS_SDRAM_BASE + 0x100;
-+#if defined(CONFIG_NOR) || defined(CONFIG_NAND)
++#if defined(CONFIG_NOR) || defined(CONFIG_MTD_RAW_NAND)
 +	gpmc_init();
 +#endif
 +
-+#if !defined(CONFIG_SPL_BUILD) || \
-+	(defined(CONFIG_SPL_ETH_SUPPORT) && defined(CONFIG_SPL_BUILD))
++#if defined(CONFIG_CLOCK_SYNTHESIZER) && (!defined(CONFIG_SPL_BUILD) || \
++	(defined(CONFIG_SPL_ETH_SUPPORT) && defined(CONFIG_SPL_BUILD)))
 +	if (board_is_icev2()) {
 +		int rv;
 +		u32 reg;
@@ -1008,6 +1158,7 @@ index 0000000..8eaf3e9
 +#ifdef CONFIG_BOARD_LATE_INIT
 +int board_late_init(void)
 +{
++	struct udevice *dev;
 +#if !defined(CONFIG_SPL_BUILD)
 +	uint8_t mac_addr[6];
 +	uint32_t mac_hi, mac_lo;
@@ -1016,8 +1167,25 @@ index 0000000..8eaf3e9
 +#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 +	char *name = NULL;
 +
++	if (board_is_bone_lt()) {
++		/* BeagleBoard.org BeagleBone Black Wireless: */
++		if (!strncmp(board_ti_get_rev(), "BWA", 3)) {
++			name = "BBBW";
++		}
++		/* SeeedStudio BeagleBone Green Wireless */
++		if (!strncmp(board_ti_get_rev(), "GW1", 3)) {
++			name = "BBGW";
++		}
++		/* BeagleBoard.org BeagleBone Blue */
++		if (!strncmp(board_ti_get_rev(), "BLA", 3)) {
++			name = "BBBL";
++		}
++	}
++
 +	if (board_is_bbg1())
 +		name = "BBG1";
++	if (board_is_bben())
++		name = "BBEN";
 +	set_board_info_env(name);
 +
 +	/*
@@ -1025,7 +1193,7 @@ index 0000000..8eaf3e9
 +	 * on HS devices.
 +	 */
 +	if (get_device_type() == HS_DEVICE)
-+		setenv("boot_fit", "1");
++		env_set("boot_fit", "1");
 +#endif
 +
 +#if !defined(CONFIG_SPL_BUILD)
@@ -1039,11 +1207,11 @@ index 0000000..8eaf3e9
 +	mac_addr[4] = mac_lo & 0xFF;
 +	mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 +
-+	if (!getenv("ethaddr")) {
++	if (!env_get("ethaddr")) {
 +		printf("<ethaddr> not set. Validating first E-fuse MAC\n");
 +
 +		if (is_valid_ethaddr(mac_addr))
-+			eth_setenv_enetaddr("ethaddr", mac_addr);
++			eth_env_set_enetaddr("ethaddr", mac_addr);
 +	}
 +
 +	mac_lo = readl(&cdev->macid1l);
@@ -1055,166 +1223,76 @@ index 0000000..8eaf3e9
 +	mac_addr[4] = mac_lo & 0xFF;
 +	mac_addr[5] = (mac_lo & 0xFF00) >> 8;
 +
-+	if (!getenv("eth1addr")) {
++	if (!env_get("eth1addr")) {
 +		if (is_valid_ethaddr(mac_addr))
-+			eth_setenv_enetaddr("eth1addr", mac_addr);
++			eth_env_set_enetaddr("eth1addr", mac_addr);
 +	}
 +#endif
++
++	if (!env_get("serial#")) {
++		char *board_serial = env_get("board_serial");
++		char *ethaddr = env_get("ethaddr");
++
++		if (!board_serial || !strncmp(board_serial, "unknown", 7))
++			env_set("serial#", ethaddr);
++		else
++			env_set("serial#", board_serial);
++	}
++
++	/* Just probe the potentially supported cdce913 device */
++	uclass_get_device(UCLASS_CLK, 0, &dev);
 +
 +	return 0;
 +}
 +#endif
 +
-+#ifndef CONFIG_DM_ETH
-+
-+#if (defined(CONFIG_DRIVER_TI_CPSW) && !defined(CONFIG_SPL_BUILD)) || \
-+	(defined(CONFIG_SPL_ETH_SUPPORT) && defined(CONFIG_SPL_BUILD))
-+static void cpsw_control(int enabled)
-+{
-+	/* VTP can be added here */
-+
-+	return;
-+}
-+
-+static struct cpsw_slave_data cpsw_slaves[] = {
++/* CPSW platdata */
++#if !CONFIG_IS_ENABLED(OF_CONTROL)
++struct cpsw_slave_data slave_data[] = {
 +	{
-+		.slave_reg_ofs	= 0x208,
-+		.sliver_reg_ofs	= 0xd80,
-+		.phy_addr	= 0,
++		.slave_reg_ofs  = CPSW_SLAVE0_OFFSET,
++		.sliver_reg_ofs = CPSW_SLIVER0_OFFSET,
++		.phy_addr       = 0,
 +	},
 +	{
-+		.slave_reg_ofs	= 0x308,
-+		.sliver_reg_ofs	= 0xdc0,
-+		.phy_addr	= 1,
++		.slave_reg_ofs  = CPSW_SLAVE1_OFFSET,
++		.sliver_reg_ofs = CPSW_SLIVER1_OFFSET,
++		.phy_addr       = 1,
 +	},
 +};
 +
-+static struct cpsw_platform_data cpsw_data = {
-+	.mdio_base		= CPSW_MDIO_BASE,
++struct cpsw_platform_data am335_eth_data = {
 +	.cpsw_base		= CPSW_BASE,
-+	.mdio_div		= 0xff,
-+	.channels		= 8,
-+	.cpdma_reg_ofs		= 0x800,
-+	.slaves			= 1,
-+	.slave_data		= cpsw_slaves,
-+	.ale_reg_ofs		= 0xd00,
-+	.ale_entries		= 1024,
-+	.host_port_reg_ofs	= 0x108,
-+	.hw_stats_reg_ofs	= 0x900,
-+	.bd_ram_ofs		= 0x2000,
-+	.mac_control		= (1 << 5),
-+	.control		= cpsw_control,
-+	.host_port_num		= 0,
 +	.version		= CPSW_CTRL_VERSION_2,
++	.bd_ram_ofs		= CPSW_BD_OFFSET,
++	.ale_reg_ofs		= CPSW_ALE_OFFSET,
++	.cpdma_reg_ofs		= CPSW_CPDMA_OFFSET,
++	.mdio_div		= CPSW_MDIO_DIV,
++	.host_port_reg_ofs	= CPSW_HOST_PORT_OFFSET,
++	.channels		= 8,
++	.slaves			= 2,
++	.slave_data		= slave_data,
++	.ale_entries		= 1024,
++	.mac_control		= 0x20,
++	.active_slave		= 0,
++	.mdio_base		= 0x4a101000,
++	.gmii_sel		= 0x44e10650,
++	.phy_sel_compat		= "ti,am3352-cpsw-phy-sel",
++	.syscon_addr		= 0x44e10630,
++	.macid_sel_compat	= "cpsw,am33xx",
++};
++
++struct eth_pdata cpsw_pdata = {
++	.iobase = 0x4a100000,
++	.phy_interface = 0,
++	.priv_pdata = &am335_eth_data,
++};
++
++U_BOOT_DEVICE(am335x_eth) = {
++	.name = "eth_cpsw",
++	.platdata = &cpsw_pdata,
 +};
 +#endif
-+
-+#if ((defined(CONFIG_SPL_ETH_SUPPORT) || defined(CONFIG_SPL_USBETH_SUPPORT)) &&\
-+	defined(CONFIG_SPL_BUILD)) || \
-+	((defined(CONFIG_DRIVER_TI_CPSW) || \
-+	  defined(CONFIG_USB_ETHER) && defined(CONFIG_MUSB_GADGET)) && \
-+	 !defined(CONFIG_SPL_BUILD))
-+
-+/*
-+ * This function will:
-+ * Read the eFuse for MAC addresses, and set ethaddr/eth1addr/usbnet_devaddr
-+ * in the environment
-+ * Perform fixups to the PHY present on certain boards.  We only need this
-+ * function in:
-+ * - SPL with either CPSW or USB ethernet support
-+ * - Full U-Boot, with either CPSW or USB ethernet
-+ * Build in only these cases to avoid warnings about unused variables
-+ * when we build an SPL that has neither option but full U-Boot will.
-+ */
-+int board_eth_init(bd_t *bis)
-+{
-+	int rv, n = 0;
-+#if defined(CONFIG_USB_ETHER) && \
-+	(!defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_USBETH_SUPPORT))
-+	uint8_t mac_addr[6];
-+	uint32_t mac_hi, mac_lo;
-+
-+	/*
-+	 * use efuse mac address for USB ethernet as we know that
-+	 * both CPSW and USB ethernet will never be active at the same time
-+	 */
-+	mac_lo = readl(&cdev->macid0l);
-+	mac_hi = readl(&cdev->macid0h);
-+	mac_addr[0] = mac_hi & 0xFF;
-+	mac_addr[1] = (mac_hi & 0xFF00) >> 8;
-+	mac_addr[2] = (mac_hi & 0xFF0000) >> 16;
-+	mac_addr[3] = (mac_hi & 0xFF000000) >> 24;
-+	mac_addr[4] = mac_lo & 0xFF;
-+	mac_addr[5] = (mac_lo & 0xFF00) >> 8;
-+#endif
-+
-+
-+#if (defined(CONFIG_DRIVER_TI_CPSW) && !defined(CONFIG_SPL_BUILD)) || \
-+	(defined(CONFIG_SPL_ETH_SUPPORT) && defined(CONFIG_SPL_BUILD))
-+
-+#ifdef CONFIG_DRIVER_TI_CPSW
-+	if (board_is_bone() || board_is_bone_lt() ||
-+	    board_is_idk()) {
-+		writel(MII_MODE_ENABLE, &cdev->miisel);
-+		cpsw_slaves[0].phy_if = cpsw_slaves[1].phy_if =
-+				PHY_INTERFACE_MODE_MII;
-+	} else if (board_is_icev2()) {
-+		writel(RMII_MODE_ENABLE | RMII_CHIPCKL_ENABLE, &cdev->miisel);
-+		cpsw_slaves[0].phy_if = PHY_INTERFACE_MODE_RMII;
-+		cpsw_slaves[1].phy_if = PHY_INTERFACE_MODE_RMII;
-+		cpsw_slaves[0].phy_addr = 1;
-+		cpsw_slaves[1].phy_addr = 3;
-+	} else {
-+		writel((RGMII_MODE_ENABLE | RGMII_INT_DELAY), &cdev->miisel);
-+		cpsw_slaves[0].phy_if = cpsw_slaves[1].phy_if =
-+				PHY_INTERFACE_MODE_RGMII;
-+	}
-+
-+	rv = cpsw_register(&cpsw_data);
-+	if (rv < 0)
-+		printf("Error %d registering CPSW switch\n", rv);
-+	else
-+		n += rv;
-+#endif
-+
-+	/*
-+	 *
-+	 * CPSW RGMII Internal Delay Mode is not supported in all PVT
-+	 * operating points.  So we must set the TX clock delay feature
-+	 * in the AR8051 PHY.  Since we only support a single ethernet
-+	 * device in U-Boot, we only do this for the first instance.
-+	 */
-+#define AR8051_PHY_DEBUG_ADDR_REG	0x1d
-+#define AR8051_PHY_DEBUG_DATA_REG	0x1e
-+#define AR8051_DEBUG_RGMII_CLK_DLY_REG	0x5
-+#define AR8051_RGMII_TX_CLK_DLY		0x100
-+
-+	if (board_is_evm_sk() || board_is_gp_evm()) {
-+		const char *devname;
-+		devname = miiphy_get_current_dev();
-+
-+		miiphy_write(devname, 0x0, AR8051_PHY_DEBUG_ADDR_REG,
-+				AR8051_DEBUG_RGMII_CLK_DLY_REG);
-+		miiphy_write(devname, 0x0, AR8051_PHY_DEBUG_DATA_REG,
-+				AR8051_RGMII_TX_CLK_DLY);
-+	}
-+#endif
-+#if defined(CONFIG_USB_ETHER) && \
-+	(!defined(CONFIG_SPL_BUILD) || defined(CONFIG_SPL_USBETH_SUPPORT))
-+	if (is_valid_ethaddr(mac_addr))
-+		eth_setenv_enetaddr("usbnet_devaddr", mac_addr);
-+
-+	rv = usb_eth_initialize(bis);
-+	if (rv < 0)
-+		printf("Error %d registering USB_ETHER\n", rv);
-+	else
-+		n += rv;
-+#endif
-+	return n;
-+}
-+#endif
-+
-+#endif /* CONFIG_DM_ETH */
 +
 +#ifdef CONFIG_SPL_LOAD_FIT
 +int board_fit_config_name_match(const char *name)
@@ -1224,6 +1302,8 @@ index 0000000..8eaf3e9
 +	else if (board_is_bone() && !strcmp(name, "am335x-bone"))
 +		return 0;
 +	else if (board_is_bone_lt() && !strcmp(name, "am335x-boneblack"))
++		return 0;
++	else if (board_is_pb() && !strcmp(name, "am335x-pocketbeagle"))
 +		return 0;
 +	else if (board_is_evm_sk() && !strcmp(name, "am335x-evmsk"))
 +		return 0;
@@ -1242,20 +1322,49 @@ index 0000000..8eaf3e9
 +	secure_boot_verify_image(p_image, p_size);
 +}
 +#endif
++
++#if !CONFIG_IS_ENABLED(OF_CONTROL)
++static const struct omap_hsmmc_plat am335x_mmc0_platdata = {
++	.base_addr = (struct hsmmc *)OMAP_HSMMC1_BASE,
++	.cfg.host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_4BIT,
++	.cfg.f_min = 400000,
++	.cfg.f_max = 52000000,
++	.cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195,
++	.cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT,
++};
++
++U_BOOT_DEVICE(am335x_mmc0) = {
++	.name = "omap_hsmmc",
++	.platdata = &am335x_mmc0_platdata,
++};
++
++static const struct omap_hsmmc_plat am335x_mmc1_platdata = {
++	.base_addr = (struct hsmmc *)OMAP_HSMMC2_BASE,
++	.cfg.host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_8BIT,
++	.cfg.f_min = 400000,
++	.cfg.f_max = 52000000,
++	.cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195,
++	.cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT,
++};
++
++U_BOOT_DEVICE(am335x_mmc1) = {
++	.name = "omap_hsmmc",
++	.platdata = &am335x_mmc1_platdata,
++};
++#endif
 diff --git a/board/ti/nova/board.h b/board/ti/nova/board.h
 new file mode 100644
-index 0000000..48c139a
+index 0000000000..48df914af9
 --- /dev/null
 +++ b/board/ti/nova/board.h
-@@ -0,0 +1,82 @@
+@@ -0,0 +1,97 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
 +/*
 + * board.h
 + *
 + * TI AM335x boards information header
 + *
 + * Copyright (C) 2011, Texas Instruments, Incorporated - http://www.ti.com/
-+ *
-+ * SPDX-License-Identifier:	GPL-2.0+
 + */
 +
 +#ifndef _BOARD_H_
@@ -1284,9 +1393,25 @@ index 0000000..48c139a
 +	return board_ti_is("A335BNLT");
 +}
 +
++static inline int board_is_pb(void)
++{
++	return board_ti_is("A335PBGL");
++}
++
 +static inline int board_is_bbg1(void)
 +{
 +	return board_is_bone_lt() && !strncmp(board_ti_get_rev(), "BBG1", 4);
++}
++
++static inline int board_is_bben(void)
++{
++	return board_is_bone_lt() && !strncmp(board_ti_get_rev(), "SE", 2);
++}
++
++static inline int board_is_beaglebonex(void)
++{
++	return board_is_pb() || board_is_bone() || board_is_bone_lt() ||
++	       board_is_bbg1() || board_is_bben();
 +}
 +
 +static inline int board_is_evm_sk(void)
@@ -1332,10 +1457,10 @@ index 0000000..48c139a
 +#endif
 diff --git a/board/ti/nova/mux.c b/board/ti/nova/mux.c
 new file mode 100644
-index 0000000..ad85b3a
+index 0000000000..6fb2c009ba
 --- /dev/null
 +++ b/board/ti/nova/mux.c
-@@ -0,0 +1,403 @@
+@@ -0,0 +1,427 @@
 +/*
 + * mux.c
 + *
@@ -1431,6 +1556,10 @@ index 0000000..ad85b3a
 +};
 +
 +static struct module_pin_mux mmc1_pin_mux[] = {
++	{OFFSET(gpmc_ad7), (MODE(1) | RXACTIVE | PULLUP_EN)},	/* MMC1_DAT7 */
++	{OFFSET(gpmc_ad6), (MODE(1) | RXACTIVE | PULLUP_EN)},	/* MMC1_DAT6 */
++	{OFFSET(gpmc_ad5), (MODE(1) | RXACTIVE | PULLUP_EN)},	/* MMC1_DAT5 */
++	{OFFSET(gpmc_ad4), (MODE(1) | RXACTIVE | PULLUP_EN)},	/* MMC1_DAT4 */
 +	{OFFSET(gpmc_ad3), (MODE(1) | RXACTIVE | PULLUP_EN)},	/* MMC1_DAT3 */
 +	{OFFSET(gpmc_ad2), (MODE(1) | RXACTIVE | PULLUP_EN)},	/* MMC1_DAT2 */
 +	{OFFSET(gpmc_ad1), (MODE(1) | RXACTIVE | PULLUP_EN)},	/* MMC1_DAT1 */
@@ -1529,7 +1658,7 @@ index 0000000..ad85b3a
 +	{-1},
 +};
 +
-+#ifdef CONFIG_NAND
++#ifdef CONFIG_MTD_RAW_NAND
 +static struct module_pin_mux nand_pin_mux[] = {
 +	{OFFSET(gpmc_ad0),	(MODE(0) | PULLUDDIS | RXACTIVE)}, /* AD0  */
 +	{OFFSET(gpmc_ad1),	(MODE(0) | PULLUDDIS | RXACTIVE)}, /* AD1  */
@@ -1667,12 +1796,23 @@ index 0000000..ad85b3a
 +{
 +	unsigned short val;
 +
++#ifndef CONFIG_DM_I2C
 +	if (i2c_probe(I2C_CPLD_ADDR))
 +		return PROFILE_NONE;
 +
 +	if (i2c_read(I2C_CPLD_ADDR, CFG_REG, 1, (unsigned char *)(&val), 2))
 +		return PROFILE_NONE;
++#else
++	struct udevice *dev = NULL;
++	int rc;
 +
++	rc = i2c_get_chip_for_busnum(0, I2C_CPLD_ADDR, 1, &dev);
++	if (rc)
++		return PROFILE_NONE;
++	rc = dm_i2c_read(dev, CFG_REG, (unsigned char *)(&val), 2);
++	if (rc)
++		return PROFILE_NONE;
++#endif
 +	return (1 << (val & PROFILE_MASK));
 +}
 +
@@ -1683,7 +1823,7 @@ index 0000000..ad85b3a
 +		/* Beaglebone pinmux */
 +		configure_module_pin_mux(mii1_pin_mux);
 +		configure_module_pin_mux(mmc0_pin_mux);
-+#if defined(CONFIG_NAND)
++#if defined(CONFIG_MTD_RAW_NAND)
 +		configure_module_pin_mux(nand_pin_mux);
 +#elif defined(CONFIG_NOR)
 +		configure_module_pin_mux(bone_norcape_pin_mux);
@@ -1699,7 +1839,7 @@ index 0000000..ad85b3a
 +		if (profile & ~PROFILE_2)
 +			configure_module_pin_mux(i2c1_pin_mux);
 +		/* Profiles 2 & 3 don't have NAND */
-+#ifdef CONFIG_NAND
++#ifdef CONFIG_MTD_RAW_NAND
 +		if (profile & ~(PROFILE_2 | PROFILE_3))
 +			configure_module_pin_mux(nand_pin_mux);
 +#endif
@@ -1718,16 +1858,25 @@ index 0000000..ad85b3a
 +		configure_module_pin_mux(rgmii1_pin_mux);
 +		configure_module_pin_mux(mmc0_pin_mux_sk_evm);
 +	} else if (board_is_bone_lt()) {
++		if (board_is_bben()) {
++			/* SanCloud Beaglebone LT Enhanced pinmux */
++			configure_module_pin_mux(rgmii1_pin_mux);
++		} else {
++			/* Beaglebone LT pinmux */
++			configure_module_pin_mux(mii1_pin_mux);
++		}
 +		/* Beaglebone LT pinmux */
-+		configure_module_pin_mux(mii1_pin_mux);
 +		configure_module_pin_mux(mmc0_pin_mux);
-+#if defined(CONFIG_NAND) && defined(CONFIG_EMMC_BOOT)
++#if defined(CONFIG_MTD_RAW_NAND) && defined(CONFIG_EMMC_BOOT)
 +		configure_module_pin_mux(nand_pin_mux);
 +#elif defined(CONFIG_NOR) && defined(CONFIG_EMMC_BOOT)
 +		configure_module_pin_mux(bone_norcape_pin_mux);
 +#else
 +		configure_module_pin_mux(mmc1_pin_mux);
 +#endif
++	} else if (board_is_pb()) {
++		configure_module_pin_mux(mii1_pin_mux);
++		configure_module_pin_mux(mmc0_pin_mux);
 +	} else if (board_is_icev2()) {
 +		configure_module_pin_mux(mmc0_pin_mux);
 +		configure_module_pin_mux(gpio0_18_pin_mux);
@@ -1741,10 +1890,10 @@ index 0000000..ad85b3a
 +}
 diff --git a/board/ti/nova/u-boot.lds b/board/ti/nova/u-boot.lds
 new file mode 100644
-index 0000000..137f24a
+index 0000000000..c3b6c3b294
 --- /dev/null
 +++ b/board/ti/nova/u-boot.lds
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,164 @@
 +/*
 + * Copyright (c) 2004-2008 Texas Instruments
 + *
@@ -1784,6 +1933,25 @@ index 0000000..137f24a
 +		*(.vectors)
 +		CPUDIR/start.o (.text*)
 +		board/ti/nova/built-in.o (.text*)
++	}
++
++	/* This needs to come before *(.text*) */
++	.__efi_runtime_start : {
++		*(.__efi_runtime_start)
++	}
++
++	.efi_runtime : {
++		*(.text.efi_runtime*)
++		*(.rodata.efi_runtime*)
++		*(.data.efi_runtime*)
++	}
++
++	.__efi_runtime_stop : {
++		*(.__efi_runtime_stop)
++	}
++
++	.text_rest :
++	{
 +		*(.text*)
 +	}
 +
@@ -1806,27 +1974,14 @@ index 0000000..137f24a
 +
 +	. = ALIGN(4);
 +
-+	.__efi_runtime_start : {
-+		*(.__efi_runtime_start)
-+	}
-+
-+	.efi_runtime : {
-+		*(efi_runtime_text)
-+		*(efi_runtime_data)
-+	}
-+
-+	.__efi_runtime_stop : {
-+		*(.__efi_runtime_stop)
-+	}
-+
 +	.efi_runtime_rel_start :
 +	{
 +		*(.__efi_runtime_rel_start)
 +	}
 +
 +	.efi_runtime_rel : {
-+		*(.relefi_runtime_text)
-+		*(.relefi_runtime_data)
++		*(.rel*.efi_runtime)
++		*(.rel*.efi_runtime.*)
 +	}
 +
 +	.efi_runtime_rel_stop :
@@ -1905,62 +2060,113 @@ index 0000000..137f24a
 +}
 diff --git a/configs/nova_defconfig b/configs/nova_defconfig
 new file mode 100644
-index 0000000..fd7c918
+index 0000000000..92f3db34d2
 --- /dev/null
 +++ b/configs/nova_defconfig
-@@ -0,0 +1,46 @@
+@@ -0,0 +1,97 @@
 +CONFIG_ARM=y
++CONFIG_ARCH_CPU_INIT=y
++CONFIG_ARCH_OMAP2PLUS=y
++CONFIG_TI_COMMON_CMD_OPTIONS=y
 +CONFIG_AM33XX=y
-+# CONFIG_SPL_NAND_SUPPORT is not set
 +CONFIG_TARGET_NOVA=y
-+CONFIG_SPL_STACK_R_ADDR=0x82000000
-+CONFIG_DISTRO_DEFAULTS=y
-+CONFIG_FIT=y
-+CONFIG_SYS_EXTRA_OPTIONS="EMMC_BOOT"
-+CONFIG_SYS_CONSOLE_INFO_QUIET=y
-+CONFIG_VERSION_VARIABLE=y
 +CONFIG_SPL=y
-+CONFIG_SPL_STACK_R=y
++CONFIG_DEFAULT_DEVICE_TREE="am335x-evm"
++CONFIG_DISTRO_DEFAULTS=y
++CONFIG_SYS_CUSTOM_LDSCRIPT=y
++CONFIG_SYS_LDSCRIPT="board/ti/nova/u-boot.lds"
++CONFIG_SPL_LOAD_FIT=y
++# CONFIG_USE_SPL_FIT_GENERATOR is not set
++CONFIG_OF_BOARD_SETUP=y
++CONFIG_BOOTCOMMAND="if test ${boot_fit} -eq 1; then run update_to_fit; fi; run findfdt; run init_console; run envboot; run distro_bootcmd"
++CONFIG_LOGLEVEL=3
++CONFIG_SYS_CONSOLE_INFO_QUIET=y
++CONFIG_ARCH_MISC_INIT=y
++CONFIG_SPL_FIT_IMAGE_TINY=y
++CONFIG_SPL_ETH_SUPPORT=y
++# CONFIG_SPL_FS_EXT4 is not set
++CONFIG_SPL_MTD_SUPPORT=y
 +CONFIG_SPL_MUSB_NEW_SUPPORT=y
++CONFIG_SPL_NAND_DRIVERS=y
++CONFIG_SPL_NAND_ECC=y
++CONFIG_SPL_NAND_BASE=y
++CONFIG_SPL_NET_SUPPORT=y
++CONFIG_SPL_NET_VCI_STRING="AM335x U-Boot SPL"
 +CONFIG_SPL_OS_BOOT=y
-+CONFIG_AUTOBOOT_KEYED=y
-+CONFIG_AUTOBOOT_PROMPT="Press SPACE to abort autoboot in %d seconds\n"
-+CONFIG_AUTOBOOT_DELAY_STR="d"
-+CONFIG_AUTOBOOT_STOP_STR=" "
-+# CONFIG_CMD_IMLS is not set
-+CONFIG_CMD_ASKENV=y
++CONFIG_SPL_USB_GADGET=y
++CONFIG_SPL_USB_ETHER=y
++CONFIG_CMD_SPL=y
++CONFIG_CMD_SPL_NAND_OFS=0x00080000
 +# CONFIG_CMD_FLASH is not set
-+CONFIG_CMD_MMC=y
-+CONFIG_CMD_SF=y
-+CONFIG_CMD_SPI=y
-+CONFIG_CMD_I2C=y
-+CONFIG_CMD_USB=y
-+CONFIG_CMD_DFU=y
-+CONFIG_CMD_GPIO=y
++CONFIG_CMD_NAND=y
 +# CONFIG_CMD_SETEXPR is not set
-+CONFIG_CMD_EXT4_WRITE=y
++CONFIG_BOOTP_DNS2=y
++CONFIG_CMD_MTDPARTS=y
++CONFIG_MTDIDS_DEFAULT="nand0=nand.0"
++CONFIG_MTDPARTS_DEFAULT="mtdparts=nand.0:128k(NAND.SPL),128k(NAND.SPL.backup1),128k(NAND.SPL.backup2),128k(NAND.SPL.backup3),256k(NAND.u-boot-spl-os),1m(NAND.u-boot),128k(NAND.u-boot-env),128k(NAND.u-boot-env.backup1),8m(NAND.kernel),-(NAND.file-system)"
++# CONFIG_SPL_EFI_PARTITION is not set
++CONFIG_OF_CONTROL=y
++CONFIG_OF_LIST="am335x-evm am335x-bone am335x-boneblack am335x-evmsk am335x-bonegreen am335x-icev2 am335x-pocketbeagle"
++CONFIG_ENV_OVERWRITE=y
++CONFIG_SYS_RELOC_GD_ENV_ADDR=y
++CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
++CONFIG_SPL_ENV_IS_NOWHERE=y
++CONFIG_VERSION_VARIABLE=y
++CONFIG_BOOTP_SEND_HOSTNAME=y
++CONFIG_BOOTCOUNT_LIMIT=y
++CONFIG_CLK=y
++CONFIG_CLK_CDCE9XX=y
 +CONFIG_DFU_TFTP=y
 +CONFIG_DFU_MMC=y
++CONFIG_DFU_NAND=y
 +CONFIG_DFU_RAM=y
-+CONFIG_SPI_FLASH=y
++CONFIG_USB_FUNCTION_FASTBOOT=y
++CONFIG_FASTBOOT_FLASH=y
++CONFIG_FASTBOOT_FLASH_MMC_DEV=1
++CONFIG_FASTBOOT_CMD_OEM_FORMAT=y
++CONFIG_DM_I2C=y
++CONFIG_MISC=y
++CONFIG_DM_MMC=y
++# CONFIG_MMC_HW_PARTITIONING is not set
++CONFIG_MMC_OMAP_HS=y
++CONFIG_MTD=y
++CONFIG_MTD_RAW_NAND=y
++CONFIG_DM_SPI_FLASH=y
++CONFIG_SF_DEFAULT_SPEED=24000000
 +CONFIG_SPI_FLASH_WINBOND=y
-+CONFIG_SYS_NS16550=y
++CONFIG_PHY_ATHEROS=y
++CONFIG_PHY_SMSC=y
++CONFIG_DM_ETH=y
++CONFIG_MII=y
++CONFIG_DRIVER_TI_CPSW=y
++CONFIG_SPI=y
++CONFIG_DM_SPI=y
++CONFIG_OMAP3_SPI=y
++CONFIG_TIMER=y
++CONFIG_OMAP_TIMER=y
 +CONFIG_USB=y
++CONFIG_DM_USB=y
++CONFIG_DM_USB_GADGET=y
++CONFIG_SPL_DM_USB_GADGET=y
 +CONFIG_USB_MUSB_HOST=y
 +CONFIG_USB_MUSB_GADGET=y
-+CONFIG_USB_STORAGE=y
++CONFIG_USB_MUSB_TI=y
 +CONFIG_USB_GADGET=y
-+CONFIG_USB_GADGET_DOWNLOAD=y
-+CONFIG_G_DNL_MANUFACTURER="Texas Instruments"
-+CONFIG_G_DNL_VENDOR_NUM=0x0451
-+CONFIG_G_DNL_PRODUCT_NUM=0xd022
-+CONFIG_OF_LIBFDT=y
++CONFIG_USB_GADGET_MANUFACTURER="Texas Instruments"
++CONFIG_USB_GADGET_VENDOR_NUM=0x0451
++CONFIG_USB_GADGET_PRODUCT_NUM=0xd022
++CONFIG_USB_ETHER=y
++CONFIG_WDT=y
++# CONFIG_SPL_WDT is not set
++CONFIG_DYNAMIC_CRC_TABLE=y
++CONFIG_RSA=y
++CONFIG_LZO=y
 diff --git a/include/configs/nova.h b/include/configs/nova.h
 new file mode 100644
-index 0000000..fb115be
+index 0000000000..7fe3967c5b
 --- /dev/null
 +++ b/include/configs/nova.h
-@@ -0,0 +1,421 @@
+@@ -0,0 +1,322 @@
 +/*
 + * am335x_evm.h
 + *
@@ -1980,37 +2186,24 @@ index 0000000..fb115be
 +#define __CONFIG_NOVA_H
 +
 +#include <configs/ti_am335x_common.h>
-+#include <environment/ti/dfu.h>
++#include <linux/sizes.h>
 +
 +#ifndef CONFIG_SPL_BUILD
 +# define CONFIG_TIMESTAMP
-+# define CONFIG_LZO
 +#endif
 +
-+#define CONFIG_SYS_BOOTM_LEN		(16 << 20)
++#define CONFIG_SYS_BOOTM_LEN		SZ_16M
 +
-+#define MACH_TYPE_TIAM335EVM		3589	/* Until the next sync */
-+#define CONFIG_MACH_TYPE		MACH_TYPE_TIAM335EVM
-+#define CONFIG_BOARD_LATE_INIT
++#define CONFIG_MACH_TYPE		MACH_TYPE_AM335XEVM
 +
 +/* Clock Defines */
 +#define V_OSCK				24000000  /* Clock output from T2 */
 +#define V_SCLK				(V_OSCK)
 +
-+/* Custom script for NOR */
-+#define CONFIG_SYS_LDSCRIPT		"board/ti/nova/u-boot.lds"
-+
-+/* Always 128 KiB env size */
-+#define CONFIG_ENV_SIZE			(128 << 10)
-+
-+/* Enhance our eMMC support / experience. */
-+#define CONFIG_CMD_GPT
-+#define CONFIG_EFI_PARTITION
-+
-+#ifdef CONFIG_NAND
++#ifdef CONFIG_MTD_RAW_NAND
 +#define NANDARGS \
-+	"mtdids=" MTDIDS_DEFAULT "\0" \
-+	"mtdparts=" MTDPARTS_DEFAULT "\0" \
++	"mtdids=" CONFIG_MTDIDS_DEFAULT "\0" \
++	"mtdparts=" CONFIG_MTDPARTS_DEFAULT "\0" \
 +	"nandargs=setenv bootargs console=${console} " \
 +		"${optargs} " \
 +		"root=${nandroot} " \
@@ -2025,8 +2218,6 @@ index 0000000..fb115be
 +#else
 +#define NANDARGS ""
 +#endif
-+
-+#define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 +
 +#undef CONFIG_SYS_PROMPT
 +#define CONFIG_SYS_PROMPT "nova!> "
@@ -2047,27 +2238,40 @@ index 0000000..fb115be
 +#define BOOTENV_DEV_NAME_NAND(devtypeu, devtypel, instance) \
 +	#devtypel #instance " "
 +
++#if CONFIG_IS_ENABLED(CMD_USB)
++# define BOOT_TARGET_USB(func) func(USB, usb, 0)
++#else
++# define BOOT_TARGET_USB(func)
++#endif
++
++#if CONFIG_IS_ENABLED(CMD_PXE)
++# define BOOT_TARGET_PXE(func) func(PXE, pxe, na)
++#else
++# define BOOT_TARGET_PXE(func)
++#endif
++
++#if CONFIG_IS_ENABLED(CMD_DHCP)
++# define BOOT_TARGET_DHCP(func) func(DHCP, dhcp, na)
++#else
++# define BOOT_TARGET_DHCP(func)
++#endif
++
 +#define BOOT_TARGET_DEVICES(func) \
 +	func(MMC, mmc, 0) \
 +	func(LEGACY_MMC, legacy_mmc, 0) \
 +	func(MMC, mmc, 1) \
 +	func(LEGACY_MMC, legacy_mmc, 1) \
 +	func(NAND, nand, 0) \
-+	func(PXE, pxe, na) \
-+	func(DHCP, dhcp, na)
-+
-+#define CONFIG_BOOTCOMMAND \
-+	"if test ${boot_fit} -eq 1; then "	\
-+		"run update_to_fit;"	\
-+	"fi;"	\
-+	"run findfdt; " \
-+	"run init_console; " \
-+	"run envboot; " \
-+	"run distro_bootcmd"
++	BOOT_TARGET_USB(func) \
++	BOOT_TARGET_PXE(func) \
++	BOOT_TARGET_DHCP(func)
 +
 +#include <config_distro_bootcmd.h>
 +
 +#ifndef CONFIG_SPL_BUILD
++#include <environment/ti/dfu.h>
++#include <environment/ti/mmc.h>
++
 +#define CONFIG_EXTRA_ENV_SETTINGS \
 +	DEFAULT_LINUX_BOOT_ENV \
 +	DEFAULT_MMC_TI_ARGS \
@@ -2079,7 +2283,9 @@ index 0000000..fb115be
 +	"console=ttyO0,115200n8\0" \
 +	"partitions=" \
 +		"uuid_disk=${uuid_gpt_disk};" \
-+		"name=rootfs,start=2MiB,size=-,uuid=${uuid_gpt_rootfs}\0" \
++		"name=bootloader,start=384K,size=1792K," \
++			"uuid=${uuid_gpt_bootloader};" \
++		"name=rootfs,start=2688K,size=-,uuid=${uuid_gpt_rootfs}\0" \
 +	"optargs=\0" \
 +	"ramroot=/dev/ram0 rw\0" \
 +	"ramrootfstype=ext2\0" \
@@ -2110,8 +2316,18 @@ index 0000000..fb115be
 +			"setenv fdtfile am335x-bone.dtb; fi; " \
 +		"if test $board_name = A335BNLT; then " \
 +			"setenv fdtfile am335x-boneblack.dtb; fi; " \
++		"if test $board_name = A335PBGL; then " \
++			"setenv fdtfile am335x-pocketbeagle.dtb; fi; " \
++		"if test $board_name = BBBW; then " \
++			"setenv fdtfile am335x-boneblack-wireless.dtb; fi; " \
 +		"if test $board_name = BBG1; then " \
 +			"setenv fdtfile am335x-bonegreen.dtb; fi; " \
++		"if test $board_name = BBGW; then " \
++			"setenv fdtfile am335x-bonegreen-wireless.dtb; fi; " \
++		"if test $board_name = BBBL; then " \
++			"setenv fdtfile am335x-boneblue.dtb; fi; " \
++		"if test $board_name = BBEN; then " \
++			"setenv fdtfile am335x-sancloud-bbe.dtb; fi; " \
 +		"if test $board_name = A33515BB; then " \
 +			"setenv fdtfile am335x-evm.dtb; fi; " \
 +		"if test $board_name = A335X_SK; then " \
@@ -2139,9 +2355,7 @@ index 0000000..fb115be
 +#define CONFIG_SYS_NS16550_COM4		0x481a6000	/* UART3 */
 +#define CONFIG_SYS_NS16550_COM5		0x481a8000	/* UART4 */
 +#define CONFIG_SYS_NS16550_COM6		0x481aa000	/* UART5 */
-+#define CONFIG_BAUDRATE			115200
 +
-+#define CONFIG_CMD_EEPROM
 +#define CONFIG_ENV_EEPROM_IS_ON_I2C
 +#define CONFIG_SYS_I2C_EEPROM_ADDR	0x50	/* Main EEPROM */
 +#define CONFIG_SYS_I2C_EEPROM_ADDR_LEN	2
@@ -2153,16 +2367,12 @@ index 0000000..fb115be
 +/* SPL */
 +#ifndef CONFIG_NOR_BOOT
 +/* Bootcount using the RTC block */
-+#define CONFIG_BOOTCOUNT_LIMIT
-+#define CONFIG_BOOTCOUNT_AM33XX
 +#define CONFIG_SYS_BOOTCOUNT_BE
 +
 +/* USB gadget RNDIS */
-+
-+#define CONFIG_SPL_LDSCRIPT		"arch/arm/mach-omap2/am33xx/u-boot-spl.lds"
 +#endif
 +
-+#ifdef CONFIG_NAND
++#ifdef CONFIG_MTD_RAW_NAND
 +/* NAND: device related configs */
 +#define CONFIG_SYS_NAND_5_ADDR_CYCLE
 +#define CONFIG_SYS_NAND_PAGE_COUNT	(CONFIG_SYS_NAND_BLOCK_SIZE / \
@@ -2171,9 +2381,6 @@ index 0000000..fb115be
 +#define CONFIG_SYS_NAND_OOBSIZE		64
 +#define CONFIG_SYS_NAND_BLOCK_SIZE	(128*1024)
 +/* NAND: driver related configs */
-+#define CONFIG_NAND_OMAP_GPMC
-+#define CONFIG_NAND_OMAP_GPMC_PREFETCH
-+#define CONFIG_NAND_OMAP_ELM
 +#define CONFIG_SYS_NAND_BAD_BLOCK_POS	NAND_LARGE_BADBLOCK_POS
 +#define CONFIG_SYS_NAND_ECCPOS		{ 2, 3, 4, 5, 6, 7, 8, 9, \
 +					 10, 11, 12, 13, 14, 15, 16, 17, \
@@ -2187,37 +2394,17 @@ index 0000000..fb115be
 +#define CONFIG_SYS_NAND_ECCBYTES	14
 +#define CONFIG_SYS_NAND_ONFI_DETECTION
 +#define CONFIG_NAND_OMAP_ECCSCHEME	OMAP_ECC_BCH8_CODE_HW
-+#define MTDIDS_DEFAULT			"nand0=nand.0"
-+#define MTDPARTS_DEFAULT		"mtdparts=nand.0:" \
-+					"128k(NAND.SPL)," \
-+					"128k(NAND.SPL.backup1)," \
-+					"128k(NAND.SPL.backup2)," \
-+					"128k(NAND.SPL.backup3)," \
-+					"256k(NAND.u-boot-spl-os)," \
-+					"1m(NAND.u-boot)," \
-+					"128k(NAND.u-boot-env)," \
-+					"128k(NAND.u-boot-env.backup1)," \
-+					"8m(NAND.kernel)," \
-+					"-(NAND.file-system)"
 +#define CONFIG_SYS_NAND_U_BOOT_OFFS	0x000c0000
 +/* NAND: SPL related configs */
-+#ifdef CONFIG_SPL_NAND_SUPPORT
-+#define CONFIG_SPL_NAND_AM33XX_BCH
-+#endif
 +#ifdef CONFIG_SPL_OS_BOOT
-+#define CONFIG_CMD_SPL_NAND_OFS	0x00080000 /* os parameters */
 +#define CONFIG_SYS_NAND_SPL_KERNEL_OFFS	0x00200000 /* kernel offset */
-+#define CONFIG_CMD_SPL_WRITE_SIZE	0x2000
 +#endif
-+#endif /* !CONFIG_NAND */
++#endif /* !CONFIG_MTD_RAW_NAND */
 +
 +/*
 + * For NOR boot, we must set this to the start of where NOR is mapped
 + * in memory.
 + */
-+#ifdef CONFIG_NOR_BOOT
-+#define CONFIG_SYS_TEXT_BASE		0x08000000
-+#endif
 +
 +/*
 + * USB configuration.  We enable MUSB support, both for host and for
@@ -2226,34 +2413,10 @@ index 0000000..fb115be
 + * add mass storage support and for gadget we add both RNDIS ethernet
 + * and DFU.
 + */
-+#define CONFIG_USB_MUSB_DSPS
-+#define CONFIG_ARCH_MISC_INIT
-+#define CONFIG_USB_MUSB_PIO_ONLY
-+#define CONFIG_USB_MUSB_DISABLE_BULK_COMBINE_SPLIT
 +#define CONFIG_AM335X_USB0
 +#define CONFIG_AM335X_USB0_MODE	MUSB_PERIPHERAL
 +#define CONFIG_AM335X_USB1
 +#define CONFIG_AM335X_USB1_MODE MUSB_HOST
-+
-+#ifndef CONFIG_SPL_USBETH_SUPPORT
-+/* Fastboot */
-+#define CONFIG_USB_FUNCTION_FASTBOOT
-+#define CONFIG_CMD_FASTBOOT
-+#define CONFIG_ANDROID_BOOT_IMAGE
-+#define CONFIG_FASTBOOT_BUF_ADDR	CONFIG_SYS_LOAD_ADDR
-+#define CONFIG_FASTBOOT_BUF_SIZE	0x07000000
-+
-+#define CONFIG_FASTBOOT_FLASH_MMC_DEV   1
-+#endif
-+
-+#ifdef CONFIG_USB_MUSB_GADGET
-+/* Removing USB gadget and can be enabled adter adding support usb DM */
-+#ifndef CONFIG_DM_ETH
-+#define CONFIG_USB_ETHER
-+#define CONFIG_USB_ETH_RNDIS
-+#define CONFIG_USBNET_HOST_ADDR	"de:ad:be:af:00:00"
-+#endif /* CONFIG_DM_ETH */
-+#endif /* CONFIG_USB_MUSB_GADGET */
 +
 +/*
 + * Disable MMC DM for SPL build and can be re-enabled after adding
@@ -2262,23 +2425,18 @@ index 0000000..fb115be
 +#ifdef CONFIG_SPL_BUILD
 +#undef CONFIG_DM_MMC
 +#undef CONFIG_TIMER
-+#undef CONFIG_DM_USB
 +#endif
 +
-+#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_USBETH_SUPPORT)
++#if defined(CONFIG_SPL_BUILD) && defined(CONFIG_SPL_USB_ETHER)
 +/* Remove other SPL modes. */
-+#define CONFIG_ENV_IS_NOWHERE
-+#undef CONFIG_ENV_IS_IN_NAND
 +/* disable host part of MUSB in SPL */
 +/* disable EFI partitions and partition UUID support */
-+#undef CONFIG_PARTITION_UUIDS
-+#undef CONFIG_EFI_PARTITION
 +#endif
 +
 +/* USB Device Firmware Update support */
 +#ifndef CONFIG_SPL_BUILD
 +#define DFUARGS \
-+	"dfu_alt_info_emmc=rawemmc raw 0 3751936\0" \
++	DFU_ALT_INFO_EMMC \
 +	DFU_ALT_INFO_MMC \
 +	DFU_ALT_INFO_RAM \
 +	DFU_ALT_INFO_NAND
@@ -2295,59 +2453,14 @@ index 0000000..fb115be
 + */
 +#if defined(CONFIG_SPI_BOOT)
 +/* SPL related */
-+#define CONFIG_SPL_SPI_LOAD
-+#define CONFIG_SYS_SPI_U_BOOT_OFFS	0x20000
-+
-+#define CONFIG_ENV_IS_IN_SPI_FLASH
-+#define CONFIG_SYS_REDUNDAND_ENVIRONMENT
-+#define CONFIG_ENV_SPI_MAX_HZ		CONFIG_SF_DEFAULT_SPEED
-+#define CONFIG_ENV_SECT_SIZE		(4 << 10) /* 4 KB sectors */
-+#define CONFIG_ENV_OFFSET		(768 << 10) /* 768 KiB in */
-+#define CONFIG_ENV_OFFSET_REDUND	(896 << 10) /* 896 KiB in */
-+#define MTDIDS_DEFAULT			"nor0=m25p80-flash.0"
-+#define MTDPARTS_DEFAULT		"mtdparts=m25p80-flash.0:128k(SPL)," \
-+					"512k(u-boot),128k(u-boot-env1)," \
-+					"128k(u-boot-env2),3464k(kernel)," \
-+					"-(rootfs)"
 +#elif defined(CONFIG_EMMC_BOOT)
-+#define CONFIG_ENV_IS_IN_MMC
-+#define CONFIG_SYS_MMC_ENV_DEV		1
-+#define CONFIG_SYS_MMC_ENV_PART		2
-+#define CONFIG_ENV_OFFSET		0x0
-+#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
-+#define CONFIG_SYS_REDUNDAND_ENVIRONMENT
-+#elif defined(CONFIG_NOR_BOOT)
-+#define CONFIG_ENV_IS_IN_FLASH
-+#define CONFIG_ENV_SECT_SIZE		(128 << 10)	/* 128 KiB */
-+#define CONFIG_ENV_OFFSET		(512 << 10)	/* 512 KiB */
-+#define CONFIG_ENV_OFFSET_REDUND	(768 << 10)	/* 768 KiB */
-+#define MTDIDS_DEFAULT			"nor0=physmap-flash.0"
-+#define MTDPARTS_DEFAULT		"mtdparts=physmap-flash.0:" \
-+					"512k(u-boot)," \
-+					"128k(u-boot-env1)," \
-+					"128k(u-boot-env2)," \
-+					"4m(kernel),-(rootfs)"
++#define CONFIG_SYS_MMC_MAX_DEVICE	2
 +#elif defined(CONFIG_ENV_IS_IN_NAND)
-+#define CONFIG_ENV_OFFSET		0x001c0000
-+#define CONFIG_ENV_OFFSET_REDUND	0x001e0000
 +#define CONFIG_SYS_ENV_SECT_SIZE	CONFIG_SYS_NAND_BLOCK_SIZE
-+#elif !defined(CONFIG_ENV_IS_NOWHERE)
-+/* Not NAND, SPI, NOR or eMMC env, so put ENV in a file on FAT */
-+#define CONFIG_ENV_IS_IN_FAT
-+#define FAT_ENV_INTERFACE		"mmc"
-+#define FAT_ENV_DEVICE_AND_PART		"0:1"
-+#define FAT_ENV_FILE			"uboot.env"
 +#endif
 +
-+/* SPI flash. */
-+#define CONFIG_SF_DEFAULT_SPEED		24000000
-+
 +/* Network. */
-+#define CONFIG_PHY_GIGE
-+#define CONFIG_PHYLIB
-+#define CONFIG_PHY_SMSC
 +/* Enable Atheros phy driver */
-+#define CONFIG_PHY_ATHEROS
 +
 +/*
 + * NOR Size = 16 MiB
@@ -2362,12 +2475,6 @@ index 0000000..fb115be
 + * 0x4C0000 - 0xFFFFFF : Userland (11 MiB + 256 KiB)
 + */
 +#if defined(CONFIG_NOR)
-+#undef CONFIG_SYS_NO_FLASH
-+#define CONFIG_SYS_FLASH_USE_BUFFER_WRITE
-+#define CONFIG_SYS_FLASH_PROTECTION
-+#define CONFIG_SYS_FLASH_CFI
-+#define CONFIG_FLASH_CFI_DRIVER
-+#define CONFIG_FLASH_CFI_MTD
 +#define CONFIG_SYS_MAX_FLASH_SECT	128
 +#define CONFIG_SYS_MAX_FLASH_BANKS	1
 +#define CONFIG_SYS_FLASH_BASE		(0x08000000)
@@ -2383,5 +2490,5 @@ index 0000000..fb115be
 +
 +#endif	/* ! __CONFIG_NOVA_H */
 -- 
-2.1.4
+2.25.1
 

@@ -52,8 +52,7 @@ With the following software and hardware list you can run all code files present
 We also provide a PDF file that has color images of the screenshots/diagrams used in this book. [Click here to download it](http://www.packtpub.com/sites/default/files/downloads/9781789530384_ColorImages.pdf).
 
 ### Related products <Other books you may enjoy>
-* Linux Device Drivers Development
-*  [[Packt]](https://www.packtpub.com/product/linux-device-drivers-development/9781785280009?utm_source=github&utm_medium=repository&utm_campaign=9781785280009) [[Amazon]](https://www.amazon.com/dp/1785280007)
+* Linux Device Drivers Development  [[Packt]](https://www.packtpub.com/product/linux-device-drivers-development/9781785280009?utm_source=github&utm_medium=repository&utm_campaign=9781785280009) [[Amazon]](https://www.amazon.com/dp/1785280007)
 
 * Hands-On RTOS with Microcontrollers [[Packt]](https://www.packtpub.com/product/hands-on-rtos-with-microcontrollers/9781838826734?utm_source=github&utm_medium=repository&utm_campaign=9781838826734) [[Amazon]](https://www.amazon.com/dp/1838826734)
 

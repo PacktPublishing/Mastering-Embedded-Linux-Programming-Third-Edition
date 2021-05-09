@@ -1,0 +1,4 @@
+#!/bin/sh
+[ ! -d /var/run/dbus ] && /bin/install -m755 -g 22 -o 22 -d /var/run/dbus
+[ -d /tmp/dbus ] || /bin/mkdir -p /tmp/dbus
+exec /bin/dbus-daemon --system --nofork --nopidfile --syslog-only

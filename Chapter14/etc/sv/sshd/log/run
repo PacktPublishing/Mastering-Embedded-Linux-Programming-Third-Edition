@@ -1,0 +1,3 @@
+#!/bin/sh
+[ -d /var/log/sshd ] || mkdir -p /var/log/sshd
+exec chpst -u root:adm svlogd -t /var/log/sshd

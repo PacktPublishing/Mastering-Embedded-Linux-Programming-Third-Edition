@@ -1,0 +1,4 @@
+#!/bin/sh
+WIFI_STATE=$(cat /sys/class/net/wlan0/operstate)
+"$WIFI_STATE" = "up" || exit 1
+exit 0

@@ -1,0 +1,3 @@
+#!/bin/sh
+/bin/sv start /etc/sv/dbus > /dev/null || exit 1
+exec /usr/sbin/connmand -n

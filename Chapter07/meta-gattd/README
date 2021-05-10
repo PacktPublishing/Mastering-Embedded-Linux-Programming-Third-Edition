@@ -5,23 +5,21 @@ Please see the corresponding sections below for details.
 Dependencies
 ============
 
-  URI: <first dependency>
-  branch: <branch name>
+  URI: git://git.yoctoproject.org/poky.git
+  branch: dunfell
 
-  URI: <second dependency>
-  branch: <branch name>
+  URI: git://git.openembedded.org/meta-openembedded
+  branch: dunfell
 
-  .
-  .
-  .
+  URI: git://git.yoctoproject.org/meta-raspberrypi
+  branch: dunfell
 
 Patches
 =======
 
-Please submit any patches against the meta-gattd layer to the xxxx mailing list (xxxx@zzzz.org)
-and cc: the maintainer:
+Please submit any patches against the meta-gattd layer to the maintainer:
 
-Maintainer: XXX YYYYYY <xxx.yyyyyy@zzzzz.com>
+Maintainer: Frank Vasquez <frank.vasquez@gmail.com>
 
 Table of Contents
 =================
@@ -33,9 +31,16 @@ Table of Contents
 I. Adding the meta-gattd layer to your build
 =================================================
 
-Run 'bitbake-layers add-layer meta-gattd'
+bitbake-layers add-layer ../meta-openembedded/meta-oe
+bitbake-layers add-layer ../meta-openembedded/meta-python
+bitbake-layers add-layer ../meta-openembedded/meta-networking
+bitbake-layers add-layer ../meta-openembedded/meta-multimedia
+bitbake-layers add-layer ../meta-raspberrypi
+bitbake-layers add-layer ../meta-gattd
 
 II. Misc
 ========
 
---- replace with specific information about the meta-gattd layer ---
+This layer contains a BLE GATT server written in Python.
+This GATT daemon depends on BlueZ which requires D-Bus.
+Only the Raspberry Pi 3/4 are targeted because they have a Bluetooth module.

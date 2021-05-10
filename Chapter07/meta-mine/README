@@ -5,23 +5,15 @@ Please see the corresponding sections below for details.
 Dependencies
 ============
 
-  URI: <first dependency>
-  branch: <branch name>
-
-  URI: <second dependency>
-  branch: <branch name>
-
-  .
-  .
-  .
+  URI: git://git.yoctoproject.org/poky.git
+  branch: dunfell
 
 Patches
 =======
 
-Please submit any patches against the meta-mine layer to the xxxx mailing list (xxxx@zzzz.org)
-and cc: the maintainer:
+Please submit any patches against the meta-mine layer to the maintainer:
 
-Maintainer: XXX YYYYYY <xxx.yyyyyy@zzzzz.com>
+Maintainer: Frank Vasquez <frank.vasquez@gmail.com>
 
 Table of Contents
 =================
@@ -33,9 +25,11 @@ Table of Contents
 I. Adding the meta-mine layer to your build
 =================================================
 
-Run 'bitbake-layers add-layer meta-mine'
+bitbake-layers add-layer ../meta-openembedded/meta-oe
+bitbake-layers add-layer ../meta-openembedded/meta-python
+bitbake-layers add-layer ../meta-mine
 
 II. Misc
 ========
 
---- replace with specific information about the meta-mine layer ---
+This layer captures the work we did with devtool for Chapter 7.

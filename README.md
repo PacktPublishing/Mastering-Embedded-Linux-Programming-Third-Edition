@@ -34,20 +34,20 @@ if (test expression)
 **Following is what you need for this book:**
 If you’re a systems software engineer or system administrator who wants to learn Linux implementation on embedded devices, then this book is for you. Embedded systems engineers accustomed to programming for low-power microcontrollers can use this book to help make the leap to high-speed systems on chips that can run Linux. Anyone responsible for developing new hardware that needs to run Linux will also find this book useful. Basic working knowledge of the POSIX standard, C programming, and shell scripting is assumed.
 
-With the following software and hardware list you can run all code files present in the book (Chapter 1-21).
+With the following software and hardware list you can run all code examples present in the book (Chapter 1-21).
 
 ### Software and Hardware List
 
-| Chapter  | Software required                   | OS required                        |
-| -------- | ------------------------------------| -----------------------------------|
-| 1-21     | BeagleBone Black                    | Not Applicable |
-| 1-21     | Raspberry Pi 4                      | Not Applicable |
-| 1-21     | QEMU (32-bit arm)                   | Linux (Any) |
-| 1-21     | Yocto Project 3.1 (Dunfell)         | Compatible Linux distribution* |
-| 1-21     | Buildroot 2020.02 LTS               | Linux (Any) |
-| 1-21     | Crosstool-NG 1.24.0                 | Linux (Any) |
-| 1-21     | U-Boot v2021.01                     | Linux (Any) |
-| 1-21     | Linux Kernel 5.4                    |Linux (Any) |
+| Chapters                      | Software/Hardware Required  | OS Required                   |
+| ----------------------------- | --------------------------- | ----------------------------- |
+| 3, 4, 5, 6, 9, 11, 12, 15, 21 | BeagleBone Black            | Not Applicable |
+| 4, 6, 7, 10, 14, 19, 20       | Raspberry Pi 4              | Not Applicable |
+| 4, 5, 6                       | QEMU (32-bit arm)           | Linux (Any) |
+| 7, 8, 10, 13, 19, 21          | Yocto Project 3.1 (Dunfell) | Compatible Linux Distribution |
+| 6, 12, 13, 14, 19, 20, 21     | Buildroot 2020.02 LTS       | Linux (Any) |
+| 2, 3, 4, 5                    | Crosstool-NG 1.24.0         | Linux (Any) |
+| 3, 9                          | U-Boot v2021.01             | Linux (Any) |
+| 4                             | Linux Kernel 5.4            | Linux (Any) |
 
 We also provide a PDF file that has color images of the screenshots/diagrams used in this book. [Click here to download it](http://www.packtpub.com/sites/default/files/downloads/9781789530384_ColorImages.pdf).
 

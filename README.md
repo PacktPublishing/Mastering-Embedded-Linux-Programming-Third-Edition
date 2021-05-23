@@ -18,8 +18,6 @@ This book covers the following exciting features:
 
 If you feel this book is for you, get your [copy](https://www.amazon.com/dp/1789530385) today!
 
-<a href="https://www.packtpub.com/?utm_source=github&utm_medium=banner&utm_campaign=GitHubBanner"><img src="https://raw.githubusercontent.com/PacktPublishing/GitHub/master/GitHub.png" alt="https://www.packtpub.com/" border="5" /></a>
-
 ## Instructions and Navigations
 All of the code is organized into folders. For example, Chapter02.
 
@@ -51,16 +49,31 @@ With the following software and hardware list you can run all code examples pres
 
 We also provide a PDF file that has color images of the screenshots/diagrams used in this book. [Click here to download it](http://www.packtpub.com/sites/default/files/downloads/9781789530384_ColorImages.pdf).
 
-### Related products <Other books you may enjoy>
+## Errata
+
+**Page 26**: The `crosstool-ng-1.24.0` tag of crosstool-ng no longer builds because its `expat-2.2.6` dependency has been removed from SourceForge due to a security vulnerability. The fix is to checkout a later commit that upgrades this dependency to `expat-2.3.0`.
+
+```bash
+$ git clone https://github.com/crosstool-ng/crosstool-ng.git
+$ cd crosstool-ng
+$ git checkout 0528a9d744cc95aac3df40d5a1666f0a1051cf5d
+$ ./bootstrap
+$ ./configure --prefix=${PWD}
+$ make
+$ make install
+```
+
+When crosstool-ng maintainers tag a release after 1.24.0 readers should upgrade to that.
+
+## Related products <Other books you may enjoy>
 * Linux Device Drivers Development  [[Packt]](https://www.packtpub.com/product/linux-device-drivers-development/9781785280009?utm_source=github&utm_medium=repository&utm_campaign=9781785280009) [[Amazon]](https://www.amazon.com/dp/1785280007)
 
 * Hands-On RTOS with Microcontrollers [[Packt]](https://www.packtpub.com/product/hands-on-rtos-with-microcontrollers/9781838826734?utm_source=github&utm_medium=repository&utm_campaign=9781838826734) [[Amazon]](https://www.amazon.com/dp/1838826734)
 
 ## Get to Know the Authors
-**Frank Vasquez** is an independent software consultant specializing in consumer electronics. He has over a decade of experience designing and building embedded Linux systems. During that time, he has shipped numerous devices including a rackmount DSP audio server, a diver-held sonar camcorder, and a consumer IoT hotspot. Before his career as an embedded Linux engineer, Frank was a database kernel developer at IBM where he worked on DB2. He lives in Silicon Valley.
+**Frank Vasquez** is an embedded Linux engineer at Lunar Energy. He has over a decade of experience designing and building embedded Linux systems. During that time, he has shipped numerous devices including a rackmount DSP audio server, a diver-held sonar camcorder, and a consumer IoT hotspot. Before his career as an embedded Linux engineer, Frank was a database kernel developer at IBM where he worked on Db2. He lives in Silicon Valley.
 
 **Chris Simmonds** is a software consultant and trainer living in southern England. He has almost two decades of experience in designing and building open-source embedded systems. He is the founder and chief consultant at 2net Ltd, which provides professional training and mentoring services in embedded Linux, Linux device drivers, and Android platform development. He has trained engineers at many of the biggest companies in the embedded world, including ARM, Qualcomm, Intel, Ericsson, and General Dynamics. He is a frequent presenter at open source and embedded conferences, including the Embedded Linux Conference and Embedded World.
-
 
 ## Other books by the authors
 * [Mastering Embedded Linux Programming - Second Edition](https://www.packtpub.com/product/mastering-embedded-linux-programming-second-edition/9781787283282?utm_source=github&utm_medium=repository&utm_campaign=9781787283282)

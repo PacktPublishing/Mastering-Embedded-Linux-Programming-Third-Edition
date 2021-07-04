@@ -65,6 +65,14 @@ $ make install
 
 When crosstool-ng maintainers tag a release after 1.24.0 readers should upgrade to that.
 
+**Page 109**: The exercise where we boot Linux for the first time on the BeagleBone Black is missing the serial baud rate from the kernel boot paramaters. Before entering `bootz 0x80200000 - 0x80f00000` at the U-Boot prompt enter the following command:
+
+```
+setenv bootargs console=ttyO0,115200
+```
+
+This command replaces the incomplete `setenv bootargs console=ttyO0` command that was printed on that page of the book. The baud rate (`115200` in this case) needs to match the setting used in the host terminal program (e.g. `gtkterm`, `minicom`, or `screen`) otherwise we won't see any messages after `Starting the kernel ...` in the serial console.
+
 ## Related products <Other books you may enjoy>
 * Linux Device Drivers Development  [[Packt]](https://www.packtpub.com/product/linux-device-drivers-development/9781785280009?utm_source=github&utm_medium=repository&utm_campaign=9781785280009) [[Amazon]](https://www.amazon.com/dp/1785280007)
 

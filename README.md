@@ -65,13 +65,36 @@ $ make install
 
 When crosstool-ng maintainers tag a release after 1.24.0 readers should upgrade to that.
 
-**Page 109**: The exercise where we boot Linux for the first time on the BeagleBone Black is missing the serial baud rate from the kernel boot paramaters. Before entering `bootz 0x80200000 - 0x80f00000` at the U-Boot prompt enter the following command:
+**Page 109**: The exercise where we boot Linux for the first time on the BeagleBone Black is missing the serial baud rate from the kernel boot parameters. Before entering `bootz 0x80200000 - 0x80f00000` at the U-Boot prompt enter the following command:
 
 ```
 setenv bootargs console=ttyO0,115200
 ```
 
 This command replaces the incomplete `setenv bootargs console=ttyO0` command that was printed on that page of the book. The baud rate (`115200` in this case) needs to match the setting used in the host terminal program (e.g. `gtkterm`, `minicom`, or `screen`) otherwise we won't see any messages after `Starting the kernel ...` in the serial console.
+
+**Page 156**: The commands for mounting a root filesystem on QEMU and the BeagleBone Black using NFS are missing the `v3` option from the `nfsroot` kernel boot parameter.
+
+The QEMU start command should look like this:
+
+```
+QEMU_AUDIO_DRV=none \
+qemu-system-arm -m 256M -nographic -M versatilepb -kernel ${KERNEL} -append "console=ttyAMA0,115200 root=/dev/nfs rw nfsroot=${HOST_IP}:${ROOTDIR},v3 ip=${TARGET_IP}" -dtb ${DTB} -net nic -net tap,ifname=tap0,script=no
+```
+
+The U-Boot commands should look like this:
+
+```
+setenv serverip <host IP>
+setenv ipaddr <target IP>
+setenv npath <path to staging directory>
+setenv bootargs console=ttyO0,115200n8 root=/dev/nfs rw nfsroot=${serverip}:${npath},v3 ip=${ipaddr}
+fatload mmc 0:1 0x80200000 zImage
+fatload mmc 0:1 0x80f00000 am335x-boneblack.dtb
+bootz 0x80200000 - 0x80f00000
+```
+
+Replace `<host IP>`, `<target IP>`, and `<path to staging directory>` with their actual values. Note that these same placeholder values also need to be updated in the `run-qemu-nfsroot.sh` and `uEnv.txt` scripts for `Chapter05`.
 
 ## Related products <Other books you may enjoy>
 * Linux Device Drivers Development  [[Packt]](https://www.packtpub.com/product/linux-device-drivers-development/9781785280009?utm_source=github&utm_medium=repository&utm_campaign=9781785280009) [[Amazon]](https://www.amazon.com/dp/1785280007)

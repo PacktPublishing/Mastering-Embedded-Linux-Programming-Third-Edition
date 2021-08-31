@@ -1,6 +1,5 @@
 serverip=192.168.1.1
 ipaddr=192.168.1.101
 npath=/home/chris/rootfs
-bootargs=console=ttyO0,115200 root=/dev/nfs rw nfsroot=${serverip}:${npath} ip=${ipaddr}
+bootargs=console=ttyO0,115200 root=/dev/nfs rw nfsroot=${serverip}:${npath},v3 ip=${ipaddr}
 uenvcmd=fatload mmc 0:1 80200000 zImage;fatload mmc 0:1 80f00000 am335x-boneblack.dtb;bootz 80200000 - 80f00000
-

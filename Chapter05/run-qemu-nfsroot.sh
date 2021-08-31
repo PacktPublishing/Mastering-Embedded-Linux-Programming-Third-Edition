@@ -23,5 +23,4 @@ sudo route add -net ${NET_NUMBER} netmask ${NET_MASK} dev tap0
 sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 
 QEMU_AUDIO_DRV=none \
-qemu-system-arm -m 256M -nographic -M versatilepb -kernel ${KERNEL} -append "console=ttyAMA0,115200 root=/dev/nfs rw nfsroot=${HOST_IP}:${ROOTDIR} ip=${TARGET_IP}" -dtb ${DTB} -net nic -net tap,ifname=tap0,script=no
-
+qemu-system-arm -m 256M -nographic -M versatilepb -kernel ${KERNEL} -append "console=ttyAMA0,115200 root=/dev/nfs rw nfsroot=${HOST_IP}:${ROOTDIR},v3 ip=${TARGET_IP}" -dtb ${DTB} -net nic -net tap,ifname=tap0,script=no

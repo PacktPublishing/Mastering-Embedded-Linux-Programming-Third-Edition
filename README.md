@@ -51,19 +51,18 @@ We also provide a PDF file that has color images of the screenshots/diagrams use
 
 ## Errata
 
-**Page 26**: The `crosstool-ng-1.24.0` tag of crosstool-ng no longer builds because its `expat-2.2.6` dependency has been removed from SourceForge due to a security vulnerability. The fix is to checkout a later commit that upgrades this dependency to `expat-2.3.0`.
+**Page 26**: The `crosstool-ng-1.24.0` tag of crosstool-ng no longer builds because its `expat-2.2.6` and `isl-0.20` dependencies were relocated to different hosts. The simplest fix is to clone the latest version of the crosstool-ng source from the master branch of the Git repo.
 
 ```bash
 $ git clone https://github.com/crosstool-ng/crosstool-ng.git
 $ cd crosstool-ng
-$ git checkout 0528a9d744cc95aac3df40d5a1666f0a1051cf5d
 $ ./bootstrap
 $ ./configure --prefix=${PWD}
 $ make
 $ make install
 ```
 
-When crosstool-ng maintainers tag a release after 1.24.0 readers should upgrade to that.
+When crosstool-ng's maintainers tag a release after 1.24.0 readers can downgrade to that for stability.
 
 **Page 55**: TI's x-loader code was integrated into upstream U-Boot back a long time ago. There should be no mention of it when discussing open source SPLs.
 

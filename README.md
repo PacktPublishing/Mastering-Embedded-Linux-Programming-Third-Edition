@@ -65,6 +65,8 @@ $ make install
 
 When crosstool-ng maintainers tag a release after 1.24.0 readers should upgrade to that.
 
+**Page 55**: TI's x-loader code was integrated into upstream U-Boot back a long time ago. There should be no mention of it when discussing open source SPLs.
+
 **Page 109**: The exercise where we boot Linux for the first time on the BeagleBone Black is missing the serial baud rate from the kernel boot parameters. Before entering `bootz 0x80200000 - 0x80f00000` at the U-Boot prompt enter the following command:
 
 ```
@@ -102,7 +104,7 @@ Replace `<host IP>`, `<target IP>`, and `<path to staging directory>` with their
 * Hands-On RTOS with Microcontrollers [[Packt]](https://www.packtpub.com/product/hands-on-rtos-with-microcontrollers/9781838826734?utm_source=github&utm_medium=repository&utm_campaign=9781838826734) [[Amazon]](https://www.amazon.com/dp/1838826734)
 
 ## Get to Know the Authors
-**Frank Vasquez** is an embedded Linux engineer at Lunar Energy. He has over a decade of experience designing and building embedded Linux systems. During that time, he has shipped numerous devices including a rackmount DSP audio server, a diver-held sonar camcorder, and a consumer IoT hotspot. Before his career as an embedded Linux engineer, Frank was a database kernel developer at IBM where he worked on Db2. He lives in Silicon Valley.
+**Frank Vasquez** is an independent software consultant. He has over a decade of experience designing and building embedded Linux systems. During that time, he has shipped numerous devices including a rackmount DSP audio server, a diver-held sonar camcorder, and a consumer IoT hotspot. Before his career as an embedded Linux engineer, Frank was a database kernel developer at IBM where he worked on Db2. He lives in Silicon Valley.
 
 **Chris Simmonds** is a software consultant and trainer living in southern England. He has almost two decades of experience in designing and building open-source embedded systems. He is the founder and chief consultant at 2net Ltd, which provides professional training and mentoring services in embedded Linux, Linux device drivers, and Android platform development. He has trained engineers at many of the biggest companies in the embedded world, including ARM, Qualcomm, Intel, Ericsson, and General Dynamics. He is a frequent presenter at open source and embedded conferences, including the Embedded Linux Conference and Embedded World.
 

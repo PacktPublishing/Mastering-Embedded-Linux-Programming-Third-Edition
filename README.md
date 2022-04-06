@@ -101,6 +101,15 @@ bootz 0x80200000 - 0x80f00000
 
 Replace `<host IP>`, `<target IP>`, and `<path to staging directory>` with their actual values. Note that these same placeholder values also need to be updated in the `run-qemu-nfsroot.sh` and `uEnv.txt` scripts for `Chapter05`.
 
+**Page 554**: To cross-compile the `shared-mem-demo` example program for Arm Cortex-A8 SoCs:
+
+```bash
+$ arm-cortex_a8-linux-gnueabihf-gcc shared-mem-demo.c -lrt -pthread \
+-o shared-mem-demo
+```
+
+The command printed in the book generates an executable named `arm-cortex_a8-linux-gnueabihf-gcc` by mistake.
+
 ## Related products <Other books you may enjoy>
 * Linux Device Drivers Development  [[Packt]](https://www.packtpub.com/product/linux-device-drivers-development/9781785280009?utm_source=github&utm_medium=repository&utm_campaign=9781785280009) [[Amazon]](https://www.amazon.com/dp/1785280007)
 

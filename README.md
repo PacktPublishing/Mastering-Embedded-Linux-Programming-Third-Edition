@@ -51,6 +51,8 @@ We also provide a PDF file that has color images of the screenshots/diagrams use
 
 ## Errata
 
+**Preface**: In the **Download Color Images** section link `https://static.packt-cdn.com/downloads/9781801071000_ColorImages.pdf` _should be_ https://static.packt-cdn.com/downloads/9781789530384_ColorImages.pdf 
+
 **Page 26**: The `crosstool-ng-1.24.0` tag of crosstool-ng no longer builds because its `expat-2.2.6` and `isl-0.20` dependencies were relocated to different hosts. The simplest fix is to clone the latest version of the crosstool-ng source from the master branch of the Git repo.
 
 ```bash

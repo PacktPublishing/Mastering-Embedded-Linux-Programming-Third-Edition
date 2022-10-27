@@ -125,3 +125,7 @@ The command printed in the book generates an executable named `arm-cortex_a8-lin
 ## Other books by the authors
 * [Mastering Embedded Linux Programming - Second Edition](https://www.packtpub.com/product/mastering-embedded-linux-programming-second-edition/9781787283282?utm_source=github&utm_medium=repository&utm_campaign=9781787283282)
 * [Mastering Embedded Linux Programming](https://www.packtpub.com/product/mastering-embedded-linux-programming/9781784392536?utm_source=github&utm_medium=repository&utm_campaign=9781784392536)
+### Download a free PDF
+
+ <i>If you have already purchased a print or Kindle version of this book, you can get a DRM-free PDF version at no cost.<br>Simply click on the link to claim your free PDF.</i>
+<p align="center"> <a href="https://packt.link/free-ebook/9781789530384">https://packt.link/free-ebook/9781789530384 </a> </p>

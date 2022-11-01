@@ -66,6 +66,8 @@ $ make install
 
 When crosstool-ng's maintainers tag a release after 1.24.0 readers can downgrade to that for stability.
 
+**Page 43**: http://www.sqlite.org/2020/sqlite-autoconf-3330000.tar.gz is no longer available. Replace it with an up-to-date source code URL from [SQLite Download Page](https://www.sqlite.org/download.html) and adjust the subsequent `tar` and `cd` commands' arguments.
+
 **Page 44**: The path where the SQLite header files are installed is wrong. Here is their correct location.
 
 * `<sysroot>/usr/include`: `sqlite3.h`, `sqlite3ext.h`: These are the header files.

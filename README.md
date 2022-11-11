@@ -66,13 +66,15 @@ $ make install
 
 When crosstool-ng's maintainers tag a release after 1.24.0 readers can downgrade to that for stability.
 
-**Page 43**: http://www.sqlite.org/2020/sqlite-autoconf-3330000.tar.gz is no longer available. Replace it with an up-to-date source code URL from [SQLite Download Page](https://www.sqlite.org/download.html) and adjust the subsequent `tar` and `cd` commands' arguments.
+**Page 43**: http://www.sqlite.org/2020/sqlite-autoconf-3330000.tar.gz may be no longer available. Replace it with an up-to-date source code URL from [SQLite Download Page](https://www.sqlite.org/download.html) and adjust the subsequent `tar` and `cd` commands' arguments.
 
 **Page 44**: The path where the SQLite header files are installed is wrong. Here is their correct location.
 
 * `<sysroot>/usr/include`: `sqlite3.h`, `sqlite3ext.h`: These are the header files.
 
 **Page 55**: TI's x-loader code was integrated into upstream U-Boot back a long time ago. There should be no mention of it when discussing open source SPLs.
+
+**Page 67**: "which would be `sdb` in the first example" should use `sda` instead.
 
 **Page 109**: The exercise where we boot Linux for the first time on the BeagleBone Black is missing the serial baud rate from the kernel boot parameters. Before entering `bootz 0x80200000 - 0x80f00000` at the U-Boot prompt enter the following command:
 

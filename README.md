@@ -53,7 +53,7 @@ With the following software and hardware list you can run all code examples pres
 | 3, 4, 5, 6, 9, 11, 12, 15, 21 | BeagleBone Black            | Not Applicable |
 | 4, 6, 7, 10, 14, 19, 20       | Raspberry Pi 4              | Not Applicable |
 | 4, 5, 6                       | QEMU (32-bit arm)           | Linux (Any) |
-| 7, 8, 10, 13, 19, 21          | Yocto Project 3.1 (Dunfell) | Compatible Linux Distribution |
+| 6, 7, 8, 10, 13, 19, 21          | Yocto Project 3.1 (Dunfell) | Compatible Linux Distribution |
 | 6, 12, 13, 14, 19, 20, 21     | Buildroot 2020.02 LTS       | Linux (Any) |
 | 2, 3, 4, 5                    | Crosstool-NG 1.24.0         | Linux (Any) |
 | 3, 9                          | U-Boot v2021.01             | Linux (Any) |
@@ -134,7 +134,7 @@ The command printed in the book generates an executable named `arm-cortex_a8-lin
 * Hands-On RTOS with Microcontrollers [[Packt]](https://www.packtpub.com/product/hands-on-rtos-with-microcontrollers/9781838826734?utm_source=github&utm_medium=repository&utm_campaign=9781838826734) [[Amazon]](https://www.amazon.com/dp/1838826734)
 
 ## Get to Know the Authors
-**Frank Vasquez** is an independent software consultant. He has over a decade of experience designing and building embedded Linux systems. During that time, he has shipped numerous devices including a rackmount DSP audio server, a diver-held sonar camcorder, and a consumer IoT hotspot. Before his career as an embedded Linux engineer, Frank was a database kernel developer at IBM where he worked on Db2. He lives in Silicon Valley.
+**Frank Vasquez** is a Staff Embedded Software Engineer at Element Energy. He has over a decade of experience designing and building embedded Linux systems. During that time, he has shipped numerous devices including a rackmount DSP audio server, a diver-held sonar camcorder, and a consumer IoT hotspot. Before his career as an embedded Linux engineer, Frank was a database kernel developer at IBM where he worked on Db2. He lives in Silicon Valley.
 
 **Chris Simmonds** is a software consultant and trainer living in southern England. He has almost two decades of experience in designing and building open-source embedded systems. He is the founder and chief consultant at 2net Ltd, which provides professional training and mentoring services in embedded Linux, Linux device drivers, and Android platform development. He has trained engineers at many of the biggest companies in the embedded world, including ARM, Qualcomm, Intel, Ericsson, and General Dynamics. He is a frequent presenter at open source and embedded conferences, including the Embedded Linux Conference and Embedded World.
 

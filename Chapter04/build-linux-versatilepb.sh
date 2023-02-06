@@ -8,7 +8,7 @@ if [ $? != 0 ]; then echo "ERROR"; exit; fi
 make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- mrproper
 if [ $? != 0 ]; then echo "ERROR"; exit; fi
 
-make versatile_defconfig
+make ARCH=arm versatile_defconfig
 if [ $? != 0 ]; then echo "ERROR"; exit; fi
 
 make -j4 ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- zImage

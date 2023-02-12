@@ -22,7 +22,7 @@ This book covers the following exciting features:
 If you feel this book is for you, get your [copy](https://www.amazon.com/dp/1789530385) today!
 
 ## Instructions and Navigations
-All of the code is organized into folders. For example, Chapter02.
+All of the code is organized into folders. For example, `Chapter02`.
 
 The code will look like the following:
 ```
@@ -78,6 +78,19 @@ When crosstool-ng's maintainers tag a release after 1.24.0 readers can downgrade
 **Page 55**: TI's x-loader code was integrated into upstream U-Boot back a long time ago. There should be no mention of it when discussing open source SPLs.
 
 **Page 67**: "which would be `sdb` in the first example" should use `sda` instead.
+
+**Page 107**: The exercise on building a kernel for QEMU is missing a critical step where the `versatile_defconfig` is selected and a `.config` file is generated prior to compiling.
+
+```bash
+$ cd linux-stable
+$ make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- mrproper
+$ make ARCH=arm versatile_defconfig
+$ make -j4 ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- zImage
+$ make -j4 ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- modules
+$ make ARCH=arm CROSS_COMPILE=arm-unknown-linux-gnueabi- dtbs
+```
+
+These commands are also captured in a `build-linux-versatilepb.sh` script under the `Chapter04` directory.
 
 **Page 109**: The exercise where we boot Linux for the first time on the BeagleBone Black is missing the serial baud rate from the kernel boot parameters. Before entering `bootz 0x80200000 - 0x80f00000` at the U-Boot prompt enter the following command:
 

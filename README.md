@@ -87,6 +87,10 @@ setenv bootargs console=ttyO0,115200
 
 This command replaces the incomplete `setenv bootargs console=ttyO0` command that was printed on that page of the book. The baud rate (`115200` in this case) needs to match the setting used in the host terminal program (e.g. `gtkterm`, `minicom`, or `screen`) otherwise we won't see any messages after `Starting the kernel ...` in the serial console.
 
+Some readers have remarked that the letter `O` in `console=ttyO0` looks like a typo and asked if the `console` kernel boot parameter should instead be set to `tty00` with two zeros. The answer is no, `console=ttyO0` is in fact not a typo and `console=tty00` is never a valid option. Nowadays, it is best to use `console=ttyS0` with TI boards like the BeagleBone Black.
+
+There are two kernel configuration options for the serial driver on the TI AM335x: either `SERIAL_8250_OMAP` or the generic `SERIAL_8250`. The OMAP driver is preferable because is supports additional features, but for a serial console it really makes no difference. In older versions of Linux, the OMAP driver was named `ttyO` using the letter `O`, but code was added in Linux 3.18 to handle both `ttyS` and `ttyO`.
+
 **Page 156**: The commands for mounting a root filesystem on QEMU and the BeagleBone Black using NFS are missing the `v3` option from the `nfsroot` kernel boot parameter.
 
 The QEMU start command should look like this:

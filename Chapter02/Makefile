@@ -17,7 +17,7 @@ all: \
   library/hello-arm/hello-arm-static
 
 library/hello-arm/hello-arm-shared: LDFLAGS = -Llibrary/shared -ltest
-library/hello-arm/hello-arm-shared: LDLIBS = library/shared/libtest.sob	
+library/hello-arm/hello-arm-shared: LDLIBS = library/shared/libtest.so
 library/hello-arm/hello-arm-shared: library/hello-arm/hello-arm.c library/shared/libtest.so
 	$(LINK.c) $< $(LOADLIBES) $(LDLIBS) -o $@
 

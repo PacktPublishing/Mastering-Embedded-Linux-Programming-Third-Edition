@@ -79,6 +79,8 @@ When crosstool-ng's maintainers tag a release after 1.24.0 readers can downgrade
 
 **Page 67**: "which would be `sdb` in the first example" should use `sda` instead.
 
+**Page 105**: The link to the web page where you can download the prebuilt toolchain targeting AArch64 is broken. Here is a working [link](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads).
+
 **Page 107**: The exercise on building a kernel for QEMU is missing a critical step where the `versatile_defconfig` is selected and a `.config` file is generated prior to compiling.
 
 ```bash

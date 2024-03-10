@@ -1,6 +1,3 @@
-
-
-
 # Mastering Embedded Linux Programming – Third Edition
 
 <a href="https://www.packtpub.com/product/mastering-embedded-linux-programming-third-edition/9781789530384?utm_source=github&utm_medium=repository&utm_campaign=9781789530384"><img src="https://static.packt-cdn.com/products/9781789530384/cover/smaller" alt="Mastering Embedded Linux Programming – Third Edition" height="256px" align="right"></a>
@@ -41,14 +38,14 @@ With the following software and hardware list you can run all code examples pres
 
 | Chapters                      | Software/Hardware Required  | OS Required                   |
 | ----------------------------- | --------------------------- | ----------------------------- |
-| 3, 4, 5, 6, 9, 11, 12, 15, 21 | BeagleBone Black            | Not Applicable |
-| 4, 6, 7, 10, 14, 19, 20       | Raspberry Pi 4              | Not Applicable |
-| 4, 5, 6                       | QEMU (32-bit arm)           | Linux (Any) |
-| 6, 7, 8, 10, 13, 19, 21          | Yocto Project 3.1 (Dunfell) | Compatible Linux Distribution |
-| 6, 12, 13, 14, 19, 20, 21     | Buildroot 2020.02 LTS       | Linux (Any) |
-| 2, 3, 4, 5                    | Crosstool-NG 1.24.0         | Linux (Any) |
-| 3, 9                          | U-Boot v2021.01             | Linux (Any) |
-| 4                             | Linux Kernel 5.4            | Linux (Any) |
+| 3, 4, 5, 6, 9, 11, 12, 15, 21 | BeagleBone Black            | Not Applicable                |
+| 4, 6, 7, 10, 14, 19, 20       | Raspberry Pi 4              | Not Applicable                |
+| 4, 5, 6                       | QEMU (32-bit arm)           | Linux (Any)                   |
+| 6, 7, 8, 10, 13, 19, 21       | Yocto Project 3.1 (Dunfell) | Compatible Linux Distribution |
+| 6, 12, 13, 14, 19, 20, 21     | Buildroot 2020.02 LTS       | Linux (Any)                   |
+| 2, 3, 4, 5                    | Crosstool-NG 1.24.0         | Linux (Any)                   |
+| 3, 9                          | U-Boot v2021.01             | Linux (Any)                   |
+| 4                             | Linux Kernel 5.4            | Linux (Any)                   |
 
 We also provide a PDF file that has color images of the screenshots/diagrams used in this book. [Click here to download it](http://www.packtpub.com/sites/default/files/downloads/9781789530384_ColorImages.pdf).
 
@@ -105,6 +102,13 @@ This command replaces the incomplete `setenv bootargs console=ttyO0` command tha
 Some readers have remarked that the letter `O` in `console=ttyO0` looks like a typo and asked if the `console` kernel boot parameter should instead be set to `tty00` with two zeros. The answer is no, `console=ttyO0` is in fact not a typo and `console=tty00` is never a valid option. Nowadays, it is best to use `console=ttyS0` with TI boards like the BeagleBone Black.
 
 There are two kernel configuration options for the serial driver on the TI AM335x: either `SERIAL_8250_OMAP` or the generic `SERIAL_8250`. The OMAP driver is preferable because is supports additional features, but for a serial console it really makes no difference. In older versions of Linux, the OMAP driver was named `ttyO` using the letter `O`, but code was added in Linux 3.18 to handle both `ttyS` and `ttyO`.
+
+**Page 140**: The U-Boot commands for loading the `am335x-boneblack.dtb` and `uRamdisk` files shoud be on separate lines:
+
+```
+fatload mmc 0:1 0x80f00000 am335x-boneblack.dtb
+fatload mmc 0:1 0x81000000 uRamdisk
+```
 
 **Page 156**: The commands for mounting a root filesystem on QEMU and the BeagleBone Black using NFS are missing the `v3` option from the `nfsroot` kernel boot parameter.
 

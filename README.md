@@ -142,6 +142,12 @@ bootz 0x80200000 - 0x80f00000
 
 Replace `<host IP>`, `<target IP>`, and `<path to staging directory>` with their actual values. Note that these same placeholder values also need to be updated in the `run-qemu-nfsroot.sh` and `uEnv.txt` scripts for `Chapter05`.
 
+**Page 219**: Add the following line to `bubblewrap_0.4.1.bb` after step 4 and before step 5:
+
+```
+DEPENDS = "libcap bash-completion"
+```
+
 **Page 554**: To cross-compile the `shared-mem-demo` example program for Arm Cortex-A8 SoCs:
 
 ```bash

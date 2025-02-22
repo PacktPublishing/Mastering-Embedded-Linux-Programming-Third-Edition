@@ -53,7 +53,7 @@ We also provide a PDF file that has color images of the screenshots/diagrams use
 
 **Preface**: In the **Download Color Images** section link `https://static.packt-cdn.com/downloads/9781801071000_ColorImages.pdf` _should be_ https://static.packt-cdn.com/downloads/9781789530384_ColorImages.pdf 
 
-**Page 18**: The command to install the software required for Chapter 2 is formatted incorectly. There should be a `\` be every newline we wish to escape so that the shell does not execute the command prematurely.
+**Page 18**: The command to install the software required for Chapter 2 is formatted incorectly. There should be a `\` before every newline we wish to escape so that the shell does not execute the command prematurely.
 
 ```bash
 $ sudo apt-get install autoconf automake bison bzip2 cmake \
@@ -62,18 +62,27 @@ libstdc++6 libtool libtool-bin make patch python3-dev rsync \
 texinfo unzip wget xz-utils
 ```
 
-**Page 26**: The `crosstool-ng-1.24.0` tag of crosstool-ng no longer builds because its `expat-2.2.6` and `isl-0.20` dependencies were relocated to different hosts. The simplest fix is to clone the latest version of the crosstool-ng source from the master branch of the Git repo.
+**Page 28**: The `bin/ct-ng build` command fails for three reasons. First, it cannot download the `isl-0.20` source tarball. Next, it cannot download the `expat-2.2.6` source tarball. Lastly, it cannot compile `binutils` becasue "error: 'string' in namespace 'std' does not name a type". The fix for the first two errors is to download the `isl-0.20` and `expat-2.2.6` source tarballs from different hosts.
 
 ```bash
-$ git clone https://github.com/crosstool-ng/crosstool-ng.git
-$ cd crosstool-ng
-$ ./bootstrap
-$ ./configure --prefix=${PWD}
-$ make
-$ make install
+$ cd ~/src
+$ wget https://libisl.sourceforge.io/isl-0.20.tar.bz2
+$ wget https://github.com/libexpat/libexpat/releases/download/R_2_2_6/expat-2.2.6.tar.bz2
 ```
 
-When crosstool-ng's maintainers tag a release after 1.24.0 readers can downgrade to that for stability.
+The fix for the third error is to insert `#include <string>` into `crosstool-ng/.build/arm-cortex_a8-linux-gnueabihf/src/binutils/gold/errors.h` as shown.
+
+```
+#ifndef GOLD_ERRORS_H
+#define GOLD_ERRORS_H
+
+#include <cstdarg>
+#include <string>
+
+#include "gold-threads.h"
+```
+
+Make sure to check out and build the `crosstool-ng-1.24.0` tag of crosstool-ng on page 26.
 
 **Page 43**: http://www.sqlite.org/2020/sqlite-autoconf-3330000.tar.gz may be no longer available. Replace it with an up-to-date source code URL from [SQLite Download Page](https://www.sqlite.org/download.html) and adjust the subsequent `tar` and `cd` commands' arguments.
 

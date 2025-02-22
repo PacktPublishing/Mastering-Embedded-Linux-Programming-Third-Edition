@@ -62,7 +62,7 @@ libstdc++6 libtool libtool-bin make patch python3-dev rsync \
 texinfo unzip wget xz-utils
 ```
 
-**Page 28**: The `bin/ct-ng build` command fails for three reasons. First, it cannot download the `isl-0.20` source tarball. Next, it cannot download the `expat-2.2.6` source tarball. Lastly, it cannot compile `binutils` becasue "error: 'string' in namespace 'std' does not name a type". The fix for the first two errors is to download the `isl-0.20` and `expat-2.2.6` source tarballs from different hosts.
+**Page 28**: The `bin/ct-ng build` command fails for three reasons. First, it cannot download the `isl-0.20` source tarball. Next, it cannot download the `expat-2.2.6` source tarball. Lastly, it cannot compile `binutils` becasue `"error: 'string' in namespace 'std' does not name a type"`. The fix for the first two errors is to download the `isl-0.20` and `expat-2.2.6` source tarballs from different hosts.
 
 ```bash
 $ cd ~/src
